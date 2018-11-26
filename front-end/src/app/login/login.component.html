@@ -1,8 +1,10 @@
 <br>
 <h3>Login</h3>
-<input class= "form-control" type='text' id='email' value='email'/>
+<label>Email:</label>
+<input class= "form-control" #email type='text' id='email'/>
 <br>
-<input class= "form-control" type="text" id="password" value='password'/>
+<label>Password:</label>
+<input class= "form-control" #password type="text" id="password"/>
 <br>
 <button class="btn btn-warning" type="button" (click)='onClick(email.value, password.value)'id="submit">Login</button>
 <br>

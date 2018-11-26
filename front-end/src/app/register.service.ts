@@ -10,7 +10,7 @@ export class RegisterService {
   
   uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/createAccount';
   
-  authenticate( user : Object) { 
+  authenticate( user : Object){ 
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
     });
