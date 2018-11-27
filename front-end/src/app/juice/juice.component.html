@@ -1,3 +1,16 @@
-<p>
-  juice works!
-</p>
+<!--top product list-->
+<h3>Top Products</h3>
+<ul id="list">
+    <li *ngFor="let product of top_ten">
+        {{ product }}
+    </li>
+</ul>
+
+
+<h3>Product Catalog</h3>
+<select  [ngModel]="selectedProduct" (ngModelChange)="onChange($event)" >
+    <option [ngValue]="i.name+'- Price:$'+i.price+' -Tax:'+i.tax+'% - Quantity: '+i.quantity" *ngFor="let i of products">{{i.name}}</option>
+</select>
+<br>
+<!--updated select box, click on one item and the info show below box-->
+<p>Product Details: <span>{{selectedProduct}}</span><p>

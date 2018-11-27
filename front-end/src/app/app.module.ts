@@ -11,6 +11,7 @@ import { LoginService } from './login.service';
 import { JuiceService } from './juice.service';
 import { RegisterComponent } from './register/register.component';
 import { RegisterService } from './register.service';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { RegisterService } from './register.service';
     BrowserAnimationsModule,
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule  
   ],
   providers: [],
   bootstrap: [AppComponent]
