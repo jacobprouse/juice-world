@@ -9,6 +9,7 @@ var bodyParser = require('body-parser');
 var path       = require('path');
 var validator = require('validator');//to protect against html/js injection
 var sanitize = require('mongo-sanitize');//to protect againts mongoDB injection
+var jwt = require('jsonwebtoken');
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -22,7 +23,7 @@ var port = 8081;        // set our port
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-mongoose.connect('mongodb://localhost:27017/bears', { useNewUrlParser: true })
+mongoose.connect('mongodb://localhost:27017/bears', { useNewUrlParser: true });
 
 var Juice = require('./app/models/juice');
 var User = require('./app/models/user');
@@ -32,16 +33,6 @@ var nev = require('email-verification')(mongoose);
 /*
     code for email verification from url :https://www.npmjs.com/package/email-verification
 */
-
-var myHasher = function(password, tempUserData, insertTempUser, callback) {
-    bcrypt.genSalt(8, function(err, salt) {
-        if(err){console.log(err);}
-        bcrypt.hash(password, salt, function(err, hash) {
-            if(err){console.log(err);}
-            return insertTempUser(hash, tempUserData, callback);
-        });
-    });
-};
     
 //email verification
 nev.configure({
@@ -108,7 +99,7 @@ router.get('/', function(req, res) {
 // on routes that end in /email-verification/:URL for email verification
 // ----------------------------------------------------
 router.route('/email-verification/:URL')
-
+    //code for email verification from url :https://www.npmjs.com/package/email-verification
     //get verification page
     .get(function(req, res) {
         var url = req.params.URL;
@@ -121,7 +112,7 @@ router.route('/email-verification/:URL')
                         return res.status(404).send('ERROR: sending confirmation email FAILED');
                     }
                     //send the verification page
-                    res.sendFile(path.join(__dirname + '/public/verification.html'));
+                    res.sendFile(path.join(__dirname + '/public/verified.html'));
                     //used for confirmation testing
                     // res.json({
                     //     msg: 'CONFIRMED!',
@@ -135,19 +126,8 @@ router.route('/email-verification/:URL')
             }
         });
     });
+    //end copied code
 
-
-// on routes that end in /authenticate (for logging in)
-// ----------------------------------------------------
-router.route('/authenticate')
-
-    // create a bear (accessed at POST c9 public url)
-    .post(function(req, res) {
-        var user = new User();
-        //check database for validation
-        //send cookie?
-    });
-    
 // on routes that end in /user   (just for dev testing)
 // ----------------------------------------------------
 //return all users for testing
@@ -230,10 +210,10 @@ router.route('/createAccount')
             }
         });
     });
-    
-// on routes that end in /juice
+    //end copied code
+// on routes that end in /resend, for resending the verif email (for dev testing)
 // ----------------------------------------------------
-router.route('/resend')
+ router.route('/resend')
     //code modified from url: https://github.com/whitef0x0/node-email-verification/blob/master/examples/express/server.js
     .post(function(req, res) {
         var email = req.body.email;
@@ -253,32 +233,69 @@ router.route('/resend')
             }
         });
     });
+    //end copied code
+    
+// on routes that end in /authenticate (for logging in)
+// ----------------------------------------------------
+router.route('/authenticate')
+
+    // create a bear (accessed at POST c9 public url)
+    .post(function(req, res) {
+        var user1 = new User();
+        user1.email = req.body.email;
+        let expass = checkHash(req.body.password);
+        User.find({email:user1.email}).exec(function(err, user){
+            if(err){res.send(err);}
+            
+            if(user.password == expass){
+                //is good
+                jwt.sign({user:user}, 'secret', { expiresIn: '1h' }, (err, token)=>{
+                    if(err){res.send(err)};
+                    res.json({
+                        token: token
+                    });
+                    //client saves token in local storage
+                });
+            }
+        });
+    });
 
 // on routes that end in /juice
 // ----------------------------------------------------
 router.route('/juice')
 
-    // create a bear (https://se3316-jprouse2-lab5-jprouse2.c9users.io/:8081/api/bear)
-    .post(function(req, res) {
-        var juice = new Juice();// create a new instance of the Bear model
-        req.body.name = validator.escape(req.body.name);//escape html characters
-        req.body.name = validator.trim(req.body.name);//trim whitespace
-        var cleanName = sanitize(req.body.name);//sanitize for noSQL commands
-        juice.name = cleanName // set the bears name (comes from the request)
-        juice.price = req.body.price;
-        juice.tax = req.body.tax;
-        juice.quantity = req.body.quantity;
-
-        // save the bear and check for errors
-        juice.save(function(err) {
-            if (err){
-                res.send(err);
+    // create a juice (https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/juice)
+    .post(verifyToken, function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+                
+            }else{
+                var juice = new Juice();// create a new instance of the Bear model
+                req.body.name = validator.escape(req.body.name);//escape html characters
+                req.body.name = validator.trim(req.body.name);//trim whitespace
+                var cleanName = sanitize(req.body.name);//sanitize for noSQL commands
+                juice.name = cleanName // set the bears name (comes from the request)
+                juice.price = req.body.price;
+                juice.tax = req.body.tax;
+                juice.quantity = req.body.quantity;
+                juice.sold = req.body.sold;
+                
+                // save the bear and check for errors
+                juice.save(function(err) {
+                    if (err){
+                        res.send(err);
+                    }
+                    res.json({ 
+                        message: 'Juice created!' ,
+                        authData
+                    });
+                });
             }
-            res.json({ message: 'Juice created!' });
         });
     })
     
-    // get all the bears (accessed at GET https://se3316-jprouse2-lab5-jprouse2.c9users.io/:8081/api/juice)
+    // get all the juices (https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/juice)
     .get(function(req, res) {
         Juice.find(function(err, juice) {
             if (err){
@@ -288,11 +305,24 @@ router.route('/juice')
         });
     });
     
+// on routes that end in /juice/top_juices
+// ----------------------------------------------------
+router.route('/juice/top_juices')    
+
+    .get(function(req, res) {
+        //query to find top 10 products
+        let query = {sold:-1};
+        Juice.find().sort(query).limit(10).exec(function(err, juice) {
+            if (err) throw err;
+            res.send(juice);
+        });
+    });
+
 // on routes that end in /juice/:juice_id
 // ----------------------------------------------------
 router.route('/juice/:juice_id')
 
-    // get the bear with that id 
+    // get the juice with that id 
     .get(function(req, res) {
         Juice.findById(req.params.bear_id, function(err, juice) {
             if (err){
@@ -301,12 +331,18 @@ router.route('/juice/:juice_id')
         });
     })
     
-    // update the bear with this id 
+    // update the juice with this id 
     .put(function(req, res) {
-        //tbd
+        Juice.findById(req.body.bear_id, function(err, juice){
+            if(err){ 
+                res.send(err);
+            }
+            juice.sold = req.body.sold;
+            res.json(juice);
+        })
     })
     
-    // delete the bear with this id
+    // delete the juice with this id
     .delete(function(req, res) {
         console.log(req.body.juice_id)
         Juice.remove({
@@ -323,6 +359,52 @@ router.route('/juice/:juice_id')
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
 app.use('/api', router);
+
+// FUNCTIONS
+// =============================================================================
+//hashing functions
+var myHasher = function(password, tempUserData, insertTempUser, callback) {
+    bcrypt.genSalt(8, function(err, salt) {
+        if(err){console.log(err);}
+        bcrypt.hash(password, salt, function(err, hash) {
+            if(err){console.log(err);}
+            return insertTempUser(hash, tempUserData, callback);
+        });
+    });
+};
+var checkHash = function(password){
+        bcrypt.genSalt(8, function(err, salt) {
+        if(err){console.log(err);}
+        bcrypt.hash(password, salt, function(err, hash) {
+            if(err){console.log(err);}
+            return hash;
+        });
+    });
+};
+
+//verify token
+//Format of token
+//Authorization: Bearer <access_token>
+function verifyToken(req, res, next){
+    // get auth header value
+    let bearerHeader = req.headers['authorization'];
+    //check if bearer is undefined
+    if(typeof bearerHeader != 'undefined'){
+        //split at the space (Bearer' 'token)
+        let bearer = bearerHeader.split(' ');
+        //get token from array
+        let bearerToken = bearer[1];
+        //set the token
+        req.token = bearerToken;
+        //call middlewear
+        next();
+    }else{
+        //forbidden
+        res.json("You fudged up on verifyToken function");
+    }
+    
+}
+
 
 // START THE SERVER
 // =============================================================================
