@@ -8,7 +8,7 @@
               <th scope="col">Description</th>
               <th scope="col">Price($)</th>
               <th scope="col">Tax(%)</th>
-              <th scope="col">Quantity</th>
+              <th scope="col">Stock</th>
             </tr>
           </thead>
           <tbody>
@@ -34,7 +34,8 @@
               <th scope="col">Description</th>
               <th scope="col">Price($)</th>
               <th scope="col">Tax(%)</th>
-              <th scope="col">Quantity</th>
+              <th scope="col">Stock</th>
+              <th scope="col"># In Cart</th>
             </tr>
           </thead>
           <tbody>
@@ -44,8 +45,18 @@
               <td>{{item.price}}</td>
               <td>{{item.tax}}</td>
               <td>{{item.quantity}}</td>
+              <td>{{item.cart}}<td>
+              <button (click)="increaseCart(item._id, item.cart+1)"class="btn btn-success">
+                  <i class="fas fa-plus"></i>
+              </button>
+              <button (click)="decreaseCart(item._id, item.cart)"class="btn btn-danger">
+                  <i class="fas fa-minus"></i>
+              </button>
             </tr>   
           </tbody>
+          <label style='padding-right:10px;'>Total: {{total}}</label>
+          <button (click)="buy()"class="btn btn-success">Buy</button>
+          <button (click)="clear()"class="btn btn-warning">Clear Cart</button>
         </table>
     </div>
 </div>
