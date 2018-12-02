@@ -23,10 +23,33 @@ var port = 8081;        // set our port
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
+//hashing functions
+var myHasher = function(password, tempUserData, insertTempUser, callback) {
+    bcrypt.genSalt(8, function(err, salt) {
+        if(err){console.log(err);}
+        bcrypt.hash(password, salt, function(err, hash) {
+            if(err){console.log(err);}
+            return insertTempUser(hash, tempUserData, callback);
+        });
+    });
+};
+var myHasher2 = function(password, tempUserData, insertTempUser, callback) {
+    bcrypt.genSalt(8, function(err, salt) {
+        if(err){console.log(err);}
+        bcrypt.hash(password, salt, function(err, hash) {
+            if(err){console.log(err);}
+            return hash
+        });
+    });
+};
+
+
 mongoose.connect('mongodb://localhost:27017/bears', { useNewUrlParser: true });
 
 var Juice = require('./app/models/juice');
 var User = require('./app/models/user');
+var Comments = require('./app/models/comments');
+var Collections = require('./app/models/collections');
 
 var nev = require('email-verification')(mongoose);
 
@@ -99,31 +122,31 @@ router.get('/', function(req, res) {
 // on routes that end in /email-verification/:URL for email verification
 // ----------------------------------------------------
 router.route('/email-verification/:URL')
+
     //code for email verification from url :https://www.npmjs.com/package/email-verification
     //get verification page
     .get(function(req, res) {
         var url = req.params.URL;
         
-        nev.confirmTempUser(url, function(err, user) {
+        nev.confirmTempUser(url, function(err, user1) {
             if(err){console.log(err);}
-            if (user) {
-                nev.sendConfirmationEmail(user.email, function(err, info) {
+            if (user1) {
+                nev.sendConfirmationEmail(user1.email, function(err, info) {
                     if (err) {
                         return res.status(404).send('ERROR: sending confirmation email FAILED');
                     }
                     //send the verification page
                     res.sendFile(path.join(__dirname + '/public/verified.html'));
-                    //used for confirmation testing
-                    // res.json({
-                    //     msg: 'CONFIRMED!',
-                    //     info: info
-                    // });
-                    user.active=true;
-                    user.verified=true;
                 });
             } else {
                 return res.status(404).send('ERROR: confirming temp user FAILED');
             }
+            User.find({email:user1.email}).exec(function(err, user){
+                user[0].verified=true;
+                user[0].role = 'store-manager'
+                user[0].save(function(err){
+                });
+            });
         });
     });
     //end copied code
@@ -132,6 +155,7 @@ router.route('/email-verification/:URL')
 // ----------------------------------------------------
 //return all users for testing
 router.route('/user')
+
     .get(function(req, res) {
         User.find(function(err, user) {
             if (err){
@@ -139,27 +163,6 @@ router.route('/user')
             res.json(user);
         });
     });
-
-// on routes that end in /createAccount (just for dev testing)
-// ----------------------------------------------------
-// router.route('/createAccounteasy')
-//     .post(function(req, res) {
-//         var email = req.body.email;
-//         var password = req.body.password;
-//         if(!email || !password){
-//             res.send("Input email and pass");
-//         }
-//         var newUser = new User();
-//         newUser.email= email;
-//         newUser.password= password;
-//         newUser.save(function(err) {
-//             if (err){
-//                 res.send(err);
-//             }
-//             res.json({ message: 'User created!' });
-//         });
-//     });
-//easy route
 
 // on routes that end in /createAccount
 // ----------------------------------------------------
@@ -170,93 +173,201 @@ router.route('/createAccount')
     .post(function(req, res) {
         var email = req.body.email;
         var password = req.body.password;
-        var newUser = new User({
-            email: email,
-            password: password
-        });
+        var button = req.body.buttonType;
+        console.log(button)
         
-
-        nev.createTempUser(newUser, function(err, existingPersistentUser, newTempUser) {
-            if (err) {
-                return res.status(404).send('ERROR: creating temp user FAILED');
-            }
-
-            // user already exists in persistent collection
-            if (existingPersistentUser) {
-                return res.json({
-                    msg: 'You have already signed up and confirmed your account. Did you forget your password?'
-                });
-            }
-        
-            // new user created
-            if (newTempUser) {
-                var URL = newTempUser[nev.options.URLFieldName];
-                
-                nev.sendVerificationEmail(email, URL, function(err, info) {
+        if(!validator.isEmail(email)){
+            res.send("Input valid email");
+        }
+        else if(typeof password == 'undefined' || password==''){
+            res.send("Wrong password")
+        }
+        else{
+            var newUser = new User({
+                email: email,
+                password: password
+            });
+            if(button == 'register'){
+                nev.createTempUser(newUser, function(err, existingPersistentUser, newTempUser) {
                     if (err) {
-                        return res.status(404).send('ERROR: sending verification email FAILED');
+                        res.status(404).send('ERROR: creating temp user FAILED');
                     }
-                    res.json({
-                        msg: 'An email has been sent to you. Please check it to verify your account.',
-                        info: info
-                    });
-                });
-
-                // user already exists in temporary collection!
-            } else {
-                res.json({
-                    msg: 'You have already signed up. Please check your email to verify your account.'
-                });
-            }
-        });
-    });
-    //end copied code
-// on routes that end in /resend, for resending the verif email (for dev testing)
-// ----------------------------------------------------
- router.route('/resend')
-    //code modified from url: https://github.com/whitef0x0/node-email-verification/blob/master/examples/express/server.js
-    .post(function(req, res) {
-        var email = req.body.email;
         
-        nev.resendVerificationEmail(email, function(err, userFound) {
-            if (err) {
-                return res.status(404).send('ERROR: resending verification email FAILED');
-            }
-            if (userFound) {
-                res.json({
-                    msg: 'An email has been sent to you, yet again. Please check it to verify your account.'
+                    // user already exists in persistent collection
+                    if (existingPersistentUser) {
+                        res.send('You have already signed up and confirmed your account. Did you forget your password?');
+                    }
+                
+                    // new user created
+                    if (newTempUser) {
+                        var URL = newTempUser[nev.options.URLFieldName];
+                        
+                        nev.sendVerificationEmail(email, URL, function(err, info) {
+                            if (err) {
+                                return res.status(404).send('ERROR: sending verification email FAILED');
+                            }
+                            res.send('An email has been sent to you. Please check it to verify your account.')
+                        });
+        
+                        // user already exists in temporary collection!
+                    } else {
+                        res.send('You have already signed up. Please check your email to verify your account.');
+                    }
                 });
-            } else {
-                res.json({
-                    msg: 'Your verification code has expired. Please sign up again.'
+            }else{
+                nev.resendVerificationEmail(email, function(err, userFound) {
+                    if (err) {
+                        return res.status(404).send('ERROR: resending verification email FAILED');
+                    }
+                    if (userFound) {
+                        res.send('An email has been sent to you, yet again. Please check it to verify your account.');
+                    } else {
+                        res.send('Your verification code has expired. Please sign up again.');
+                    }
                 });
             }
-        });
-    });
+        }
+    })
     //end copied code
+    .put(function(req, res){
+        let useremail= req.body.email;
+        User.find({email:useremail}).exec(function(err, user){
+            if(err){
+                res.send(err);
+            }
+            user[0].verified = true;
+            user[0].active=true;
+            user[0].role = 'admin';
+            user[0].save(function(err) {
+                if (err){
+                    res.send(err);
+                }
+                res.json('saved');
+            });
+            
+
+        });
+    })
     
 // on routes that end in /authenticate (for logging in)
 // ----------------------------------------------------
 router.route('/authenticate')
 
-    // create a bear (accessed at POST c9 public url)
+    // login a user, send a token
     .post(function(req, res) {
+        let email = req.body.email;
+        let pass = req.body.password;
+        if(!validator.isEmail(email)){
+            res.send("Input email");
+        }
+        else if(typeof req.body.password == 'undefined' || req.body.password==''){
+            res.send("Input password")
+        }
+        else{
         var user1 = new User();
+        //get the email
         user1.email = req.body.email;
-        let expass = checkHash(req.body.password);
-        User.find({email:user1.email}).exec(function(err, user){
-            if(err){res.send(err);}
-            
-            if(user.password == expass){
-                //is good
-                jwt.sign({user:user}, 'secret', { expiresIn: '1h' }, (err, token)=>{
-                    if(err){res.send(err)};
-                    res.json({
-                        token: token
-                    });
-                    //client saves token in local storage
-                });
+        //get pass
+        
+        //make query
+        let query = {email:user1.email};
+        //execute query
+        User.find(query, function(err, user){
+            if(err){res.send("Wrong email or password");}
+            if(typeof user[0] == 'undefined'){
+                "Wrong email or password"
             }
+            if(user[0].active == false){
+                res.send('User is not active, see Store Manager')
+            }
+            if(user[0].verified == false){
+                res.send("You aren't verified, check your email")
+            }
+            //compare passwords with hash
+            bcrypt.compare(pass, user[0].password, function(err, result) {
+                if(err){
+                    res.send("Wrong email or password");
+                }
+                console.log('in')
+                if(result==true){
+                    //is true
+                    jwt.sign({role:user[0].role, email:user[0].email}, 'secret', { expiresIn: '1h'}, (err, token)=>{
+                        if(err){
+                            res.send("Wrong email or password");
+                        }
+                        //send token
+                        console.log('sending')
+                        res.json({
+                            token: token
+                        });
+                        //client saves token in local storage
+                    });
+                }
+                else{
+                    res.send("Wrong email or password")
+                }
+            });
+        })
+        }
+    })
+    
+// on routes that end in /comments/:juice_id
+// ----------------------------------------------------
+router.route('/comments/:juice_id')
+    
+    //post a comment for a specific juice_id
+    .post(function(req, res){
+        let comment = new Comments()
+        if(typeof req.body._id == 'undefined' || typeof req.body.text == 'undefined' ||
+        typeof req.body.email == 'undefined' || typeof req.body.rating == 'undefined'){
+            res.send('Fill out the fields')
+        }
+        comment.juiceID =  req.body._id;
+        comment.text = req.body.text;
+        comment.email = req.body.email;
+        comment.rating = req.body.rating;
+        // save the bear and check for errors
+        comment.save(function(err) {
+            if (err){
+                res.send(err);
+            }
+        });
+    })
+    
+    //get all comments for a specific juice
+    .get(function(req, res){
+        let query = {juiceID:req.params.juice_id};
+        Comments.find(query, function(err, comments) {
+            if (err){
+                res.send(err);}
+            res.json(comments);
+        });
+    });
+        
+// on routes that end in /comments/:user_email
+// ----------------------------------------------------
+router.route('/comments/:user_id')
+    
+    //get all comments by specific user
+    .get(function(req, res){
+        let query = {email:req.body.email}
+        Comments.find(query, function(err, comments) {
+            if (err){
+                res.send(err);}
+            res.json(comments);
+        });
+    });
+
+//easy grab all comments (for dev testing)
+// ----------------------------------------------------
+router.route('/comments')
+    
+    //get all comments by specific user
+    .get(function(req, res){
+        Comments.find(function(err, comments) {
+            if (err){
+                res.send(err);}
+            res.json(comments);
         });
     });
 
@@ -271,6 +382,9 @@ router.route('/juice')
                 res.sendStatus(403);
                 
             }else{
+                // if(authData.user.role!='store-manager'){
+                //     res.send("the senate will decide you're fate");
+                // }
                 var juice = new Juice();// create a new instance of the Bear model
                 req.body.name = validator.escape(req.body.name);//escape html characters
                 req.body.name = validator.trim(req.body.name);//trim whitespace
@@ -280,6 +394,7 @@ router.route('/juice')
                 juice.tax = req.body.tax;
                 juice.quantity = req.body.quantity;
                 juice.sold = req.body.sold;
+                juice.description = req.body.description;
                 
                 // save the bear and check for errors
                 juice.save(function(err) {
@@ -287,8 +402,8 @@ router.route('/juice')
                         res.send(err);
                     }
                     res.json({ 
-                        message: 'Juice created!' ,
-                        authData
+                        message: 'Juice created! I AM THE SENATE',
+                        juice
                     });
                 });
             }
@@ -333,7 +448,7 @@ router.route('/juice/:juice_id')
     
     // update the juice with this id 
     .put(function(req, res) {
-        Juice.findById(req.body.bear_id, function(err, juice){
+        Juice.findById(req.body.juice_id, function(err, juice){
             if(err){ 
                 res.send(err);
             }
@@ -362,26 +477,6 @@ app.use('/api', router);
 
 // FUNCTIONS
 // =============================================================================
-//hashing functions
-var myHasher = function(password, tempUserData, insertTempUser, callback) {
-    bcrypt.genSalt(8, function(err, salt) {
-        if(err){console.log(err);}
-        bcrypt.hash(password, salt, function(err, hash) {
-            if(err){console.log(err);}
-            return insertTempUser(hash, tempUserData, callback);
-        });
-    });
-};
-var checkHash = function(password){
-        bcrypt.genSalt(8, function(err, salt) {
-        if(err){console.log(err);}
-        bcrypt.hash(password, salt, function(err, hash) {
-            if(err){console.log(err);}
-            return hash;
-        });
-    });
-};
-
 //verify token
 //Format of token
 //Authorization: Bearer <access_token>
@@ -403,6 +498,16 @@ function verifyToken(req, res, next){
         res.json("You fudged up on verifyToken function");
     }
     
+    
+}
+function checkHash(password){
+    bcrypt.genSalt(8, function(err, salt) {
+        if(err){console.log(err);}
+        bcrypt.hash(password, salt, function(err, hash) {
+            if(err){console.log(err);}
+            return hash;
+        });
+    });
 }
 
 

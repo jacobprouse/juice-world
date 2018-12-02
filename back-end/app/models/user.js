@@ -11,7 +11,7 @@ var UserSchema   = new Schema({
     //role of user i.e. admin, normal, etc..
     role:{type:String, default: 'customer'},
     //if the account is active/deactivated
-    active:{type: Boolean, default: false},
+    active:{type: Boolean, default: true},
     //if the account has been verified
     verified:{type: Boolean, default: false}
 });
