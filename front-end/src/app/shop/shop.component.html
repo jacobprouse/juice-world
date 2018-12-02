@@ -1,0 +1,55 @@
+<div class='row' style='padding-left:10px;'>
+    <div class='column'>
+        <h1 style='padding-left:5px;'>Product Catalog</h1>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col">Price($)</th>
+              <th scope="col">Tax(%)</th>
+              <th scope="col">Quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor = 'let product of products'>
+              <th scope="row">{{product.name}}</th>
+              <td>{{product.description}}</td>
+              <td>{{product.price}}</td>
+              <td>{{product.tax}}</td>
+              <td>{{product.quantity}}</td>
+              <button (click)='addToCart(product._id)'class="btn btn-success">
+                  <i class="fas fa-cart-plus"></i>
+              </button>
+            </tr>   
+          </tbody>
+        </table>
+    </div>
+    <div class='column' style='padding-left:40px;'>
+        <h1 style='padding-left:5px;'>Shopping Cart</h1>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col">Price($)</th>
+              <th scope="col">Tax(%)</th>
+              <th scope="col">Quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor = 'let item of cart'>
+              <th scope="row">{{item.name}}</th>
+              <td>{{item.description}}</td>
+              <td>{{item.price}}</td>
+              <td>{{item.tax}}</td>
+              <td>{{item.quantity}}</td>
+            </tr>   
+          </tbody>
+        </table>
+    </div>
+</div>
+<!--<app-shoppingCart><app-shoppingCart>-->
+<!--<app-collection></app-collection>-->
+<!--<app-><app->-->
+<!--<app-><app->-->

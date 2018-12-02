@@ -10,7 +10,7 @@ export class RegisterService {
   
   uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/createAccount';
   
-  authenticate( user : Object){ 
+  authenticate( user : Object, button){ 
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
     });
@@ -18,8 +18,14 @@ export class RegisterService {
     let options = {
       'headers': httpHeaders
     };
-    this.http.post(this.uri, JSON.stringify(user), options).subscribe(res => {
-      console.log(res);
-    });
+    this.http.post(this.uri, JSON.stringify(user), options)
+      .subscribe(
+        res => {
+          console.log(res);
+        }
+        err => {
+          alert(err.error.text);
+        }
+      );
   }
 }

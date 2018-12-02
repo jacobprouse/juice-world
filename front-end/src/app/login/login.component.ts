@@ -7,6 +7,7 @@ import { LoginService } from '../login.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  error = "";
 
   constructor( private loginService : LoginService ) { }
 
@@ -14,12 +15,16 @@ export class LoginComponent implements OnInit {
   }
   
   onClick(email, password){
-    let user = {
-      'email': email,
-      'password': password
-    };
-    
-    this.loginService.authenticate(user);
+    if(email==null||password==null){
+      alert("Input an email");
+    }
+    else{
+      let user = {
+        'email': email,
+        'password': password
+      };
+     this.loginService.authenticate(user);
+    }
   }
 
 }

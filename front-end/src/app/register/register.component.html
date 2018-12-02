@@ -6,5 +6,7 @@
 <label>Password:</label>
 <input class= "form-control" #regpassword type="text" id="regpassword"/>
 <br>
-<button class="btn btn-primary" type="button" (click)='onClick(regemail.value, regpassword.value)'id="register">Create New Account</button>
+<button class="btn btn-primary" type="button" (click)='onClick("register", regemail.value, regpassword.value)'id="register">Create New Account</button>
+<br>
+<button class="btn btn-danger" type="button" (click)='onClick("resend", regemail.value, regpassword.value)'id="resend">Resend Verification Email</button>
 <br>

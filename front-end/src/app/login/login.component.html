@@ -6,8 +6,9 @@
 <label>Password:</label>
 <input class= "form-control" #password type="text" id="password"/>
 <br>
-<button class="btn btn-warning" type="button" (click)='onClick(email.value, password.value)'id="submit">Login</button>
+<label>{{error}}</label>
 <br>
-
+<button class="btn btn-warning" (click)='onClick(email.value, password.value)'id="submit">Login</button>
+<br>
 
 

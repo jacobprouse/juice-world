@@ -1,5 +1,17 @@
+<h1>Welcome to Juice WORLD</h1>
+<p>
+    Juice World is the only store in North America that sells and produces exotic and never before seen juices.
+    Our selection is above and beyond grocery stores and black markets alike.    
+</p>
+<button type="button" *ngIf="ver" class="btn btn-warning" data-toggle="collapse" data-target="#demo">Account Options</button>
+<div id="demo" class="collapse">
+    <app-login></app-login>
+    <app-register></app-register>
+</div>
+
 <!--top product list-->
 <h3>Top Products</h3>
+<p>By Quantity Sold</p>
 <ul id="list">
     <li *ngFor="let product of top_ten">
         {{ product }}
@@ -9,8 +21,38 @@
 
 <h3>Product Catalog</h3>
 <select  [ngModel]="selectedProduct" (ngModelChange)="onChange($event)" >
-    <option [ngValue]="i.name+'- Price:$'+i.price+' -Tax:'+i.tax+'% - Quantity: '+i.quantity" *ngFor="let i of products">{{i.name}}</option>
+    <option [ngValue]="[i.name+' - Description: '+ i.description+' - Price:$'+i.price+' -Tax:'+i.tax+'% - Quantity: '+i.quantity, i._id]" *ngFor="let i of products">{{i.name}}</option>
 </select>
 <br>
 <!--updated select box, click on one item and the info show below box-->
 <p>Product Details: <span>{{selectedProduct}}</span><p>
+<div *ngIf="!ver">
+    <h3>Make a Comment!</h3>
+    <textarea rows='4' cols='50' #comment name="comment"></textarea>
+    <br><p>Rating:</p>
+    <div class="rating">
+        <span><input (change)="onSelectionChange(5)" type="radio" name="rating" id="str5" [value]="5"><label for="str5"></label></span>
+        <span><input (change)="onSelectionChange(4)" type="radio" name="rating" id="str4" [value]="4"><label for="str4"></label></span>
+        <span><input (change)="onSelectionChange(3)" type="radio" name="rating" id="str3" [value]="3"><label for="str3"></label></span>
+        <span><input (change)="onSelectionChange(2)" type="radio" name="rating" id="str2" [value]="2"><label for="str2"></label></span>
+        <span><input (change)="onSelectionChange(1)" type="radio" name="rating" id="str1" [value]="1"><label for="str1"></label></span>
+    </div>
+    <br>
+    <br>
+    <button class="btn btn-warning" (click)='newComment(comment.value)'>Submit</button>
+    <br>
+    <br>
+</div>
+
+<h3>Comments:</h3>
+<div class="panel panel-default">
+    <div class="panel-body" *ngFor="let com of comments">
+        <b>User: {{ com.email }}</b> <br>
+        <em>Rating: {{com.rating}} STARS</em><br>
+        <p>
+            <u>Comment</u>
+            <br>
+            {{com.text}}
+        </p>
+    </div>
+</div>

@@ -13,10 +13,11 @@ export class RegisterComponent implements OnInit {
   ngOnInit() {
   }
 
-  onClick(email, password){
+  onClick(buttonName, email, password){
     let newUser = {
       'email':email,
-      'password':password
+      'password':password,
+      'buttonType':buttonName
     };
     this.registerService.authenticate(newUser);
   }
