@@ -64,6 +64,7 @@ export class JuiceComponent implements OnInit {
   //on select box change the label below to selected option
   onChange(newValue){
     this.currentID = newValue[1];
+    this.clearComments();
     this.selectedProduct = newValue[0];
     this.commentsService.getComments(this.currentID, this.populateComments.bind(this));
   }
@@ -85,6 +86,9 @@ export class JuiceComponent implements OnInit {
     else{
       this.commentsService.makeComment(this.currentID,text, this.userRating)
     }
+  }
+  clearComments(){
+    this.comments=[]
   }
   
   populateComments(res:Object){

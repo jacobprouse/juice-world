@@ -110,6 +110,7 @@ router.use(function(req, res, next) {
     console.log('Something is happening.');
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -356,13 +357,18 @@ router.route('/comments/:user_id')
                 res.send(err);}
             res.json(comments);
         });
+    })
+    
+    //change visibility of comment
+    .put(function(req, res){
+        //implement
     });
 
 //easy grab all comments (for dev testing)
 // ----------------------------------------------------
 router.route('/comments')
     
-    //get all comments by specific user
+    //get all comments
     .get(function(req, res){
         Comments.find(function(err, comments) {
             if (err){
@@ -420,6 +426,29 @@ router.route('/juice')
         });
     });
     
+// on routes that end in /juice/buy
+// ----------------------------------------------------
+router.route('/juice/buy')    
+
+    .put(function(req, res) {
+        console.log('goteeem');
+        Juice.findById(req.body._id, function(err, juice){
+            if(err){ 
+                res.send(err);
+            }
+            console.log(req.body)
+            juice.quantity = req.body.newQuantity;
+            juice.sold = juice.sold + req.body.cart;
+            juice.save(function(err) {
+                if (err){
+                    res.send(err);
+                }
+                res.json({ message: ' updated!' });
+            });
+        })
+    });
+
+
 // on routes that end in /juice/top_juices
 // ----------------------------------------------------
 router.route('/juice/top_juices')    

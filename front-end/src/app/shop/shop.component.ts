@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { JuiceService } from '../juice.service';
+import { ShopService } from '../shop.service';
 
 @Component({
   selector: 'app-shop',
@@ -14,7 +15,7 @@ export class ShopComponent implements OnInit {
   total=0;
   currentID='';
 
-  constructor(private juiceService:JuiceService) { }
+  constructor(private juiceService:JuiceService, private shopService:ShopService) { }
 
   ngOnInit() {
     //set cart from localstorage
@@ -31,6 +32,7 @@ export class ShopComponent implements OnInit {
   
   //populate the table with juices
   populateTable(res:Object){
+    this.clearTable();
     var i= 0;
     while(typeof res[i]!='undefined'){
       this.products.push(res[i]);
@@ -133,14 +135,48 @@ export class ShopComponent implements OnInit {
     }
   }
   
-  clear(){
-    if(window.confirm("Are you sure you want to clear cart?")){
+  clear(method){
+    if(method=='clear'){
+      if(window.confirm("Are you sure you want to clear cart?")){
+        localStorage.removeItem('cart')
+        this.cart = [];
+        this.calculateTotal();
+      }
+    }else{
       localStorage.removeItem('cart')
       this.cart = [];
       this.calculateTotal();
     }
   }
+  clearTable(){
+    this.products = []
+  }
   buy(){
-    
+    if(this.cart == null){
+      alert("Add items to your cart");
+    }
+    else{
+      if(window.confirm("Your purchase comes to: "+this.total)){
+        //update stock
+        console.log('coming');
+        for(var i =0; i<this.cart.length; i++){
+          console.log(this.cart[i])
+          this.shopService.buyJuice(this.cart[i]);
+        }
+        let oldCart = this.cart;
+        let oldTotal = this.total;
+        this.clear('buy');
+        this.juiceService.getJuices(this.populateTable.bind(this));
+        let names=''
+        for(var i = 0; i<oldCart.length; i++){
+          let price = (oldCart[i]['price']*(oldCart[i]['tax']/100+1))*oldCart[i]['cart']
+          names += (oldCart[i]['name']+" - Amount: "+oldCart[i]['cart']+ " - Total Per Item: " +price+"\n")
+        }
+        window.confirm("THANK YOU FOR SHOPPING FOR JUICE\n"
+                      +"Your reciept: \n"
+                      +"Items: \n"+ names
+                      +"Total: "+oldTotal+"\n")
+      }
+    }
   }
 }

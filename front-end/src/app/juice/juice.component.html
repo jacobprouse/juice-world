@@ -20,7 +20,7 @@
 
 
 <h3>Product Catalog</h3>
-<select  [ngModel]="selectedProduct" (ngModelChange)="onChange($event)" >
+<select  class="form-control col-3"[ngModel]="selectedProduct" (ngModelChange)="onChange($event)" >
     <option [ngValue]="[i.name+' - Description: '+ i.description+' - Price:$'+i.price+' -Tax:'+i.tax+'% - Quantity: '+i.quantity, i._id]" *ngFor="let i of products">{{i.name}}</option>
 </select>
 <br>
