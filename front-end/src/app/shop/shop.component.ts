@@ -23,7 +23,6 @@ export class ShopComponent implements OnInit {
       let oldCart = JSON.parse(localStorage.getItem('cart'));
       this.cart = oldCart;
       this.calculateTotal();
-      console.log(this.total)
     }catch{
       console.log('no cart');
     }
@@ -36,7 +35,6 @@ export class ShopComponent implements OnInit {
     var i= 0;
     while(typeof res[i]!='undefined'){
       this.products.push(res[i]);
-      console.log(this.products)
       i++;
     }
   }
@@ -158,9 +156,7 @@ export class ShopComponent implements OnInit {
     else{
       if(window.confirm("Your purchase comes to: "+this.total)){
         //update stock
-        console.log('coming');
         for(var i =0; i<this.cart.length; i++){
-          console.log(this.cart[i])
           this.shopService.buyJuice(this.cart[i]);
         }
         let oldCart = this.cart;

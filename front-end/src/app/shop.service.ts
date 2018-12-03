@@ -22,8 +22,6 @@ export class ShopService {
       'newQuantity':(juice.quantity - juice.cart),
       'cart': (juice.cart)
     };
-    console.log(j)
-    console.log('sending')
     this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/juice/buy';
     return this.http.put(this.uri, JSON.stringify(j), options)
       .subscribe(

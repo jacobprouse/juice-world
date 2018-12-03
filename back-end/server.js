@@ -109,7 +109,7 @@ var router = express.Router();              // get an instance of the express Ro
 router.use(function(req, res, next) {
     console.log('Something is happening.');
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
     res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
     next(); // make sure we go to the next routes and don't stop here
 });
@@ -389,7 +389,7 @@ router.route('/juice')
                 
             }else{
                 // if(authData.user.role!='store-manager'){
-                //     res.send("the senate will decide you're fate");
+                //     res.send("the senate will decide youre fate");
                 // }
                 var juice = new Juice();// create a new instance of the Bear model
                 req.body.name = validator.escape(req.body.name);//escape html characters
@@ -431,7 +431,6 @@ router.route('/juice')
 router.route('/juice/buy')    
 
     .put(function(req, res) {
-        console.log('goteeem');
         Juice.findById(req.body._id, function(err, juice){
             if(err){ 
                 res.send(err);
@@ -499,6 +498,158 @@ router.route('/juice/:juice_id')
         });
     });
 
+// on routes that end in /collections
+// ----------------------------------------------------
+router.route('/collections')
+
+    // get the collection of user
+    .get(function(req, res) {
+        Collections.find(req.body.email, function(err, col) {
+            if (err){
+                res.send(err);}
+            res.json(col);
+        });
+    })
+    
+    // post a new collection for user
+    .post(verifyToken,function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                // save the bear and check for errors
+                let col = new Collections();
+                col.name = req.body.name;
+                col.email = req.body.email;
+                col.description = req.body.description;
+                if(typeof req.body.visibility == 'undefined'){
+                    col.visibility = 'Private';
+                }
+                else{
+                    col.visibility = req.body.visibility;
+                }
+                col.save(function(err) {
+                    if (err){
+                        res.send(err);
+                    }
+                    res.json({
+                        msg:col._id
+                    });
+                });
+            }
+        });
+    })
+    
+    // update the collection of this user
+    .put(function(req, res) {
+        Collections.findById(req.body.coll_id,function(err, col){
+            if(err){ 
+                res.send(err);
+            }
+            //add juice to coll
+            if(req.body.method=='add'){
+                console.log('hi')
+                col.juices.push({
+                    juiceID:req.body.prod_id,
+                    juiceName:req.body.juiceName,
+                    quantity:1
+                });
+                console.log(col.juices)
+            }
+            //increase quant of juice
+            else if(req.body.method == 'add-minus'){
+                console.log('asdasd')
+                col.juices.forEach(element =>{
+                   if(element._id == req.body.prod_id){
+                       element.quantity = req.body.wanted
+                   }
+                });
+            }
+            //else is update collection
+            else{
+                if(req.body.name!=''){
+                    col.name = req.body.name;
+                }
+                if(req.body.description!=''){
+                    col.description = req.body.description;
+
+                }
+                col.visibility = req.body.visibility;
+            }
+            col.save(function(err) {
+                if (err){
+                    res.send(err);
+                }
+                res.json(col)
+            });
+        })
+    })
+    
+// on routes that end in /collections
+// ----------------------------------------------------
+router.route('/collections/all')
+
+    // get all collections
+    .get(function(req, res) {
+        let query = {visibility:'Public'}
+        Collections.find(query,function(err, collections) {
+            if (err){
+                res.send(err);}
+            res.json(collections);
+        });
+    })
+    
+    // on routes that end in /collections/:_id
+// ----------------------------------------------------
+router.route('/collections/:_id')
+
+    // get the collection by id
+    .get(function(req, res) {
+        Collections.findById(req.params._id, function(err, col) {
+            if (err){
+                res.send(err);}
+            res.json(col);
+        });
+    })
+    
+    //delete the collection by id
+    .delete(function(req, res) {
+        console.log(req.params._id)
+        Collections.deleteOne({_id: req.params._id}, function(err, juice) {
+            if (err){
+                res.send(err);}
+
+            res.json({ message: 'Successfully deleted' });
+            console.log('hes gone')
+        });
+    });
+
+// on routes that end in /collections/juice/:_id
+// ----------------------------------------------------
+router.route('/collections/juice')
+    //delete the collection by id
+    .put(function(req, res) {
+        console.log(req.body)
+        Collections.findById(req.body.coll_id, function(err, coll) {
+            if (err){
+                res.send(err);}
+            
+            console.log(coll.juices)
+            for(let i =0; i<coll.juices.length;i++){
+                if(coll.juices[i].juiceID == req.body.juice_id){
+                    coll.juices.splice(i, 1);
+                    break;
+                }
+            }
+            console.log(coll.juices)
+            coll.save(function(err) {
+                if (err){
+                    res.send(err);
+                }
+                res.json(coll)
+            });
+        });
+    });
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api

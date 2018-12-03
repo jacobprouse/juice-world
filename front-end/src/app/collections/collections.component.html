@@ -1,3 +1,159 @@
-<p>
-  collections works!
-</p>
+<div class='row' style='padding-left:10px;'>
+    <div class='column'>
+        <h1 style='padding-left:5px;'>Global Collections</h1>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Reveal</th>
+              <th scope="col">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col">Visibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor = 'let product of globalCollection'>
+              <button (click)='setCurrentGlobalCollection(product._id)' class="btn btn-success" data-toggle="collapse" data-target="#item">
+                  <i class="fas fa-arrow-down"></i>
+              </button>
+              <td><b>{{product.name}}</b></td>
+              <td>{{product.description}}</td>
+              <td>{{product.visibility}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="item" class="collapse">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope='col'>Owner</th>
+                <th>Juice</th>
+                <th># Wanted</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor = 'let product of globalJuices'>
+                <td><b>{{currentUser}}</b></td>
+                <td>{{product.juiceName}}</td>
+                <td>{{product.quantity}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+    </div>
+    <div class='column' style='padding-left:20px;'>
+        <h1 style='padding-left:5px;'>Your Collections</h1>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Reveal</th>
+              <th scope="col">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col">Visibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor = 'let item of collections'>
+              <button (click)='setCurrentCollection(item._id)' class="btn btn-success" data-toggle="collapse" data-target="#item2">
+                  <i class="fas fa-arrow-down"></i>
+              </button>
+              <th scope="row">{{item.name}}</th>
+              <td>{{item.description}}</td>
+              <td>{{item.visibility}}</td>
+              <button (click)='setCurrentCollection(item._id)'class="btn btn-warning" data-toggle='collapse' data-target='#edit'>
+                  <i class="fas fa-edit"></i>
+              </button>
+              <button (click)='deleteCollection(item._id)' class="btn btn-danger">
+                  <i class="fas fa-trash"></i>
+              </button>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-success" data-toggle="collapse" data-target="#demo">
+          New Collection
+        </button>
+        <div id="edit" class="collapse">
+          <label>Name of Collection: </label>
+          <input type="text" #editname class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+          <label>Description: </label>
+          <textarea class="form-control" #editdescription aria-label="With textarea"></textarea> 
+          <label>Visibility:</label>
+          <select  class="form-control" #editvisibility>
+            <option selected="selected">Private</option>
+            <option>Public</option>
+          </select>
+          <button (click)="editCollection(editname.value, editdescription.value, editvisibility[visibility.selectedIndex].value)"class="btn btn-success">
+            Confirm Edit <i class="fas fa-check"></i>
+          </button>
+        </div>
+        <div id="demo" class="collapse">
+          <label>Name of Collection: </label>
+          <input type="text" #name class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+          <label>Description: </label>
+          <textarea class="form-control" #description aria-label="With textarea"></textarea> 
+          <label>Visibility:</label>
+          <select  class="form-control" #visibility>
+            <option selected="selected">Private</option>
+            <option>Public</option>
+          </select>
+          <button (click)="addCollection(name.value, description.value, visibility[visibility.selectedIndex].value)"class="btn btn-success">
+            Add <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div id="item2" class="collapse">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope='col'>Owner</th>
+                <th>Juice</th>
+                <th># Wanted</th>
+                <button data-toggle="collapse" data-target="#product" class="btn btn-success">
+                  Add to Collection
+                </button>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor = 'let item of collection'>
+                <th scope="row">{{currentUser}}</th>
+                <td>{{item.juiceName}}</td>
+                <td>{{item.quantity}}</td>
+                <button (click)="increaseCollection(item._id, item.quantity+1, item.juiceName, 'add-minus')"class="btn btn-success">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button (click)="increaseCollection(item._id, item.quantity-1, item.juiceName, 'add-minus')"class="btn btn-danger">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button (click)='deleteCollectionItem(item.juiceID)' class="btn btn-danger">
+                  <i class="fas fa-trash"></i>
+              </button>
+              </tr>   
+            </tbody>
+          </table>
+        </div>
+    </div>
+    <div class='column collapse' id='product'>
+      <h1 style='padding-left:5px;'>Product Catalog</h1>
+      <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col">Price($)</th>
+              <th scope="col">Tax(%)</th>
+              <th scope="col">Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor = 'let product of products'>
+              <th scope="row">{{product.name}}</th>
+              <td>{{product.description}}</td>
+              <td>{{product.price}}</td>
+              <td>{{product.tax}}</td>
+              <td>{{product.quantity}}</td>
+              <button (click)="addToCollection(product._id, 1,product.name, 'add')" class="btn btn-success">
+                  <i class="fas fa-plus"></i>
+              </button>
+            </tr>   
+          </tbody>
+        </table>
+    </div>
+</div>
