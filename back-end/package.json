@@ -17,8 +17,13 @@
   },
   "homepage": "https://github.com/Jake916/se3316-jprouse2-lab5#readme",
   "dependencies": {
+    "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "mongoose": "^5.3.12"
+    "jsonwebtoken": "^8.4.0",
+    "jwt-decode": "^2.2.0",
+    "mongo-sanitize": "^1.0.1",
+    "mongoose": "^5.3.12",
+    "validator": "^10.9.0"
   }
 }

@@ -10,6 +10,7 @@ var path       = require('path');
 var validator = require('validator');//to protect against html/js injection
 var sanitize = require('mongo-sanitize');//to protect againts mongoDB injection
 var jwt = require('jsonwebtoken');
+var jwt_decode = require('jwt-decode');
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -144,7 +145,6 @@ router.route('/email-verification/:URL')
             }
             User.find({email:user1.email}).exec(function(err, user){
                 user[0].verified=true;
-                user[0].role = 'store-manager'
                 user[0].save(function(err){
                 });
             });
@@ -152,18 +152,57 @@ router.route('/email-verification/:URL')
     });
     //end copied code
 
-// on routes that end in /user   (just for dev testing)
+// on routes that end in /user
 // ----------------------------------------------------
-//return all users for testing
 router.route('/user')
 
-    .get(function(req, res) {
-        User.find(function(err, user) {
-            if (err){
-                res.send(err);}
-            res.json(user);
+    .get(verifyToken,function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token);
+                if(payload.role=='store-manager'){
+                    User.find(function(err, user) {
+                        if (err){
+                            res.send(err);}
+                        res.json(user);
+                    });
+                }
+                else{
+                    res.send("You arent store-manager")
+                }
+            }
         });
-    });
+    })
+    
+    .put(verifyToken, function(req, res){
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token);
+                if(payload.role=='store-manager'){
+                    let useremail= req.body.email;
+                    User.find({email:useremail},function(err, user){
+                        if(err){
+                            res.send(err);
+                        }
+                        user[0].active=req.body.active;
+                        user[0].role =req.body.role;
+                        user[0].save(function(err) {
+                            if (err){
+                                res.send(err);
+                            }
+                            res.json('saved');
+                        });
+                        
+            
+                    });         
+                }    
+            }
+        });
+    })
 
 // on routes that end in /createAccount
 // ----------------------------------------------------
@@ -230,25 +269,6 @@ router.route('/createAccount')
         }
     })
     //end copied code
-    .put(function(req, res){
-        let useremail= req.body.email;
-        User.find({email:useremail}).exec(function(err, user){
-            if(err){
-                res.send(err);
-            }
-            user[0].verified = true;
-            user[0].active=true;
-            user[0].role = 'admin';
-            user[0].save(function(err) {
-                if (err){
-                    res.send(err);
-                }
-                res.json('saved');
-            });
-            
-
-        });
-    })
     
 // on routes that end in /authenticate (for logging in)
 // ----------------------------------------------------
@@ -289,7 +309,6 @@ router.route('/authenticate')
                 if(err){
                     res.send("Wrong email or password");
                 }
-                console.log('in')
                 if(result==true){
                     //is true
                     jwt.sign({role:user[0].role, email:user[0].email}, 'secret', { expiresIn: '1h'}, (err, token)=>{
@@ -297,7 +316,6 @@ router.route('/authenticate')
                             res.send("Wrong email or password");
                         }
                         //send token
-                        console.log('sending')
                         res.json({
                             token: token
                         });
@@ -323,6 +341,7 @@ router.route('/comments/:juice_id')
         typeof req.body.email == 'undefined' || typeof req.body.rating == 'undefined'){
             res.send('Fill out the fields')
         }
+        comment.juiceName = req.body.juiceName;
         comment.juiceID =  req.body._id;
         comment.text = req.body.text;
         comment.email = req.body.email;
@@ -337,11 +356,11 @@ router.route('/comments/:juice_id')
     
     //get all comments for a specific juice
     .get(function(req, res){
-        let query = {juiceID:req.params.juice_id};
-        Comments.find(query, function(err, comments) {
+        Comments.find({$and: [{juiceID:req.params.juice_id}, {hidden:'false'}]},function(err, comments) {
             if (err){
                 res.send(err);}
             res.json(comments);
+            console.log(comments)
         });
     });
         
@@ -359,10 +378,17 @@ router.route('/comments/:user_id')
         });
     })
     
-    //change visibility of comment
-    .put(function(req, res){
-        //implement
-    });
+//easy grab all comments (for dev testing)
+// ----------------------------------------------------
+router.route('/comments/visible')
+    //get all comments
+    .get(function(req, res){
+        Comments.find(function(err, comments) {
+            if (err){
+                res.send(err);}
+            res.send(comments);
+        });
+    })
 
 //easy grab all comments (for dev testing)
 // ----------------------------------------------------
@@ -373,7 +399,30 @@ router.route('/comments')
         Comments.find(function(err, comments) {
             if (err){
                 res.send(err);}
-            res.json(comments);
+                console.log('hi')
+            res.send(comments);
+        });
+    })
+    
+    //update comment visibility (admin)
+    .put(verifyToken, function(req, res){
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token);
+                if(payload.role=='store-manager'){
+                    Comments.findById(req.body._id, function(err, comment){
+                        if(err){
+                            res.send(err);
+                        }
+                        comment.hidden = req.body.visibility;
+                        comment.save(function(err) {
+                            res.send(comment)
+                        });
+                    })
+                }
+            }
         });
     });
 
@@ -386,32 +435,59 @@ router.route('/juice')
         jwt.verify(req.token, 'secret', (err, authData) =>{
             if(err){
                 res.sendStatus(403);
-                
             }else{
-                // if(authData.user.role!='store-manager'){
-                //     res.send("the senate will decide youre fate");
-                // }
-                var juice = new Juice();// create a new instance of the Bear model
-                req.body.name = validator.escape(req.body.name);//escape html characters
-                req.body.name = validator.trim(req.body.name);//trim whitespace
-                var cleanName = sanitize(req.body.name);//sanitize for noSQL commands
-                juice.name = cleanName // set the bears name (comes from the request)
-                juice.price = req.body.price;
-                juice.tax = req.body.tax;
-                juice.quantity = req.body.quantity;
-                juice.sold = req.body.sold;
-                juice.description = req.body.description;
-                
-                // save the bear and check for errors
-                juice.save(function(err) {
-                    if (err){
-                        res.send(err);
-                    }
-                    res.json({ 
-                        message: 'Juice created! I AM THE SENATE',
-                        juice
+                let payload = jwt_decode(req.token)
+                if(payload.role=='store-manager'){
+                    var juice = new Juice();// create a new instance of the Bear model
+                    req.body.name = validator.escape(req.body.name);//escape html characters
+                    req.body.name = validator.trim(req.body.name);//trim whitespace
+                    var cleanName = sanitize(req.body.name);//sanitize for noSQL commands
+                    juice.name = cleanName // set the bears name (comes from the request)
+                    juice.price = req.body.price;
+                    juice.tax = req.body.tax;
+                    juice.quantity = req.body.quantity;
+                    juice.sold = req.body.sold;
+                    juice.description = req.body.description;
+                    
+                    // save the bear and check for errors
+                    juice.save(function(err) {
+                        if (err){
+                            res.send(err);
+                        }
+                        res.json({ 
+                            message: 'Juice created! I AM THE SENATE',
+                            juice
+                        });
                     });
-                });
+                    }
+                else{
+                    res.send("You arent a store manager, go away")
+                }
+            }
+        });
+    })
+    
+    .delete(verifyToken, function(req, res){
+        console.log('amost in')
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }
+            else{
+                console.log('amost in')
+                let payload = jwt_decode(req.token)
+                if(payload.role=='store-manager'){
+                    Juice.remove({_id: req.body._id}, function(err, juice) {
+                        console.log('amost in')
+                        if (err){
+                            res.send(err);
+                        }
+                        res.json({ message: 'Successfully deleted' });
+                    });
+                }
+                else{
+                    res.send("Youre not a store manager, go away")
+                }
             }
         });
     })
@@ -447,7 +523,6 @@ router.route('/juice/buy')
         })
     });
 
-
 // on routes that end in /juice/top_juices
 // ----------------------------------------------------
 router.route('/juice/top_juices')    
@@ -475,21 +550,43 @@ router.route('/juice/:juice_id')
     })
     
     // update the juice with this id 
-    .put(function(req, res) {
-        Juice.findById(req.body.juice_id, function(err, juice){
-            if(err){ 
-                res.send(err);
+    .put(verifyToken, function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token)
+                if(payload.role=='store-manager'){
+                    Juice.findById(req.params.juice_id, function(err, juice){
+                        if(err){ 
+                            res.send(err)
+                        }
+                        juice.name = req.body.name;
+                        juice.price = req.body.price;
+                        juice.tax = req.body.tax;
+                        juice.quantity = req.body.quantity;
+                        juice.sold = req.body.sold;
+                        juice.description = req.body.description;
+                        juice.save(function(err) {
+                            if (err){
+                                res.send(err);
+                            }
+                            res.json({ 
+                                message: 'Juice created! I AM THE SENATE',
+                                juice
+                            });
+                        });
+                    })
+                }
             }
-            juice.sold = req.body.sold;
-            res.json(juice);
         })
     })
     
     // delete the juice with this id
     .delete(function(req, res) {
-        console.log(req.body.juice_id)
+        console.log(req.params.juice_id)
         Juice.remove({
-            _id: req.body.juice_id
+            _id: req.params.juice_id
         }, function(err, juice) {
             if (err){
                 res.send(err);}
@@ -614,13 +711,11 @@ router.route('/collections/:_id')
     
     //delete the collection by id
     .delete(function(req, res) {
-        console.log(req.params._id)
         Collections.deleteOne({_id: req.params._id}, function(err, juice) {
             if (err){
-                res.send(err);}
-
+                res.send(err);
+            }
             res.json({ message: 'Successfully deleted' });
-            console.log('hes gone')
         });
     });
 
