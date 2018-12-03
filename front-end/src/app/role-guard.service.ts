@@ -35,4 +35,16 @@ export class RoleGuardService implements CanActivate {
     }
     return true;
   }
+  
+  //check if logged in as store-manager
+  isAdmin(){
+    const token = localStorage.getItem('token');
+    // decode the token to get its payload
+    const tokenPayload = decode(token);
+    if(tokenPayload.role=='store-manager'){
+      console.log(tokenPayload.role)
+      return true;
+    }
+    return false;
+  }
 }

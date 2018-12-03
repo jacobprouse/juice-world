@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { JuiceService } from '../juice.service';
 import { ShopService } from '../shop.service';
+import{
+RoleGuardService as RoleGuard 
+} from './role-guard.service';
+
 
 @Component({
   selector: 'app-shop',
@@ -11,7 +15,6 @@ export class ShopComponent implements OnInit {
   //current cart
   cart:String[]=[];
   products:String[]=[];
-  collection:String[]=[];
   total=0;
   currentID='';
 

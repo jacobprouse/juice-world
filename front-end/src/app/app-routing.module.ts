@@ -4,6 +4,8 @@ import { AppComponent } from './app.component';
 import { JuiceComponent } from './juice/juice.component';
 import { ShopComponent } from './shop/shop.component';
 import { CollectionsComponent } from './collections/collections.component';
+import { SettingsComponent } from './settings/settings.component';
+
 
 
 import{
@@ -25,6 +27,14 @@ const appRoutes: Routes = [
       pathMatch: 'full'
     },
     { 
+      path: 'settings',
+      component: SettingsComponent,
+      canActivate: [RoleGuard],
+      data: {
+        expectedRole: 'shop-manager'
+      }
+    },
+    { 
       path: 'shop',
       component: ShopComponent,
       canActivate: [RoleGuard],
@@ -41,14 +51,6 @@ const appRoutes: Routes = [
       }
     },
     { path: '**', redirectTo: 'home' }
-    // },
-    // { path: 'settings',
-    //   component: SettingsComponent,
-    //   canActivate: [AuthGuard],
-    //   data: {
-    //     expectedRole: 'admin'
-    //   }
-    // }
   ];
 @NgModule({
     imports: [

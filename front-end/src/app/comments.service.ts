@@ -20,12 +20,12 @@ export class CommentsService {
     });
   }
   
-  makeComment(juiceID, text, rating){
+  makeComment(juiceID,juiceName, text, rating){
     let token = localStorage.getItem('token')
     let email = decode(token).email
     let httpHeaders = new HttpHeaders({
-      'Content-Type' : 'application/json; charset=utf-8'
-      //'Authorization' : 'Bearer '+token
+      'Content-Type' : 'application/json; charset=utf-8',
+      'Authorization' : 'Bearer '+localStorage.getItem('token')
     });
     
     let options = {
@@ -33,11 +33,12 @@ export class CommentsService {
     };
     let juice = {
       '_id':juiceID,
+      'juiceName':juiceName.split('-')[0],
       'email':email,
       'text':text,
       'rating':rating
     };
-    this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/comments/juice';
+    this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/comments/'+juiceID;
     this.http.post(this.uri, JSON.stringify(juice), options).subscribe(res => {
     });
   }

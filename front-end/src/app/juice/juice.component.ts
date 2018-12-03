@@ -84,7 +84,7 @@ export class JuiceComponent implements OnInit {
       alert('Pick a product');
     }
     else{
-      this.commentsService.makeComment(this.currentID,text, this.userRating)
+      this.commentsService.makeComment(this.currentID,this.selectedProduct, text, this.userRating)
     }
   }
   clearComments(){

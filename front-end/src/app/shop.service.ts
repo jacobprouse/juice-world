@@ -12,8 +12,8 @@ export class ShopService {
   buyJuice(juice){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
+      'Authorization' : 'Bearer '+localStorage.getItem('token')
     });
-    
     let options = {
       'headers': httpHeaders
     };

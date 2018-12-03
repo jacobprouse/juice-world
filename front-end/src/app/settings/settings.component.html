@@ -1,0 +1,147 @@
+<h1>Store Manager Area</h1>
+
+<h3>Edit Items</h3>
+<div class='row' style='padding-left:10px;'>
+    <div class='column'>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col">Price($)</th>
+              <th scope="col">Tax(%)</th>
+              <th scope="col">Stock</th>
+              <button class="btn btn-success" data-toggle='collapse' data-target='#create'>
+                  New Item <i class="fas fa-plus"></i>
+              </button>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor = 'let product of products'>
+              <th scope="row">{{product.name}}</th>
+              <td>{{product.description}}</td>
+              <td>{{product.price}}</td>
+              <td>{{product.tax}}</td>
+              <td>{{product.quantity}}</td>
+              <button (click)='setCurrentProduct(product._id)'class="btn btn-success" data-toggle='collapse' data-target='#edit'>
+                  <i class="fas fa-edit"></i>
+              </button>
+              <button (click)='deleteItem(product._id)'class="btn btn-danger">
+                  <i class="fas fa-trash"></i>
+              </button>
+            </tr>   
+          </tbody>
+        </table>
+    </div>
+    <div class='column'>
+        <br><br><br><br>
+        <div id='edit' class='collapse'>
+          <h3>Edit an Item</h3>
+          <label>Name of Item: </label>
+          <input type="text" #ename class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+          <label>Description: </label>
+          <textarea class="form-control" #edescription aria-label="With textarea"></textarea> 
+          <label>Price:</label>
+          <input class= 'form-control' #eprice/>
+          <label>Tax:</label>
+          <input class= 'form-control' #etax/>
+          <label>Quantity:</label>
+          <input class= 'form-control' #equantity/>
+          <button (click)="editJuice(ename.value, edescription.value, eprice.value, etax.value, equantity.value)"class="btn btn-success">
+            Confirm Edit <i class="fas fa-plus"></i>
+          </button>
+        </div>
+    </div>
+    <div class='column'>
+        <br><br>
+        <br><br>
+        <div id='create' class='collapse'>
+          <h3>Create an Item</h3>
+          <label>Name of Item: </label>
+          <input type="text" #name class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+          <label>Description: </label>
+          <textarea class="form-control" #description aria-label="With textarea"></textarea> 
+          <label>Price:</label>
+          <input class= 'form-control' #price/>
+          <label>Tax:</label>
+          <input class= 'form-control' #tax/>
+          <label>Quantity:</label>
+          <input class= 'form-control' #quantity/>
+          <button (click)='addJuice(name.value, description.value, price.value, tax.value, quantity.value)' class="btn btn-success">
+            Add to Products <i class="fas fa-plus"></i>
+          </button>
+        </div>
+    </div>
+</div>
+<div class='row' style='padding-left:20px;'>
+    <div class='column'>
+        <h3>Comments:</h3>
+        <div class="panel panel-default">
+            <div class="panel-body" *ngFor="let com of comments">
+                <b>User: {{ com.email }}</b> <br>
+                <b>Juice: {{com.juiceName}}</b><br>
+                <em>Rating: {{com.rating}} STARS</em><br>
+                <p>
+                    Hidden: {{ com.hidden }}
+                    <br>
+                    <u>Comment:</u> 
+                    <br>
+                    {{com.text}}
+                </p>
+                <button (click)='setCurrentComment(com._id)'class="btn btn-warning" data-toggle='collapse' data-target='#comment'>
+                    Edit <i class="fas fa-edit"></i>
+                </button>
+            </div>
+            
+        </div>
+    </div>
+    <div id='comment' class='collapse'>
+        <label>Hidden:</label>
+        <select  class="form-control" #visibility>
+            <option selected="selected">false</option>
+            <option>true</option>
+        </select>
+        <button (click)='editComment(visibility[visibility.selectedIndex].value)' class="btn btn-success">
+            Confirm <i class="fas fa-check"></i>
+        </button>
+    </div>
+</div>
+<div class='row' style='padding-left:20px;'>
+  <div class='column'>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Email</th>
+          <th scope="col">Active</th>
+          <th scope="col">Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor='let user of users'>
+          <th scope="row">{{user.email}}</th>
+          <td>{{user.active}}</td>
+          <td>{{user.role}}</td>
+          <button (click)='setCurrentUser(user.email)'class="btn btn-success" data-toggle='collapse' data-target='#editUser'>
+                <i class="fas fa-edit"></i>
+          </button>
+        </tr>
+      </tbody>
+    </table>
+    <div id='editUser' class='collapse'>
+        <h3>Edit User: {{currentEmail}}</h3>
+        <label>Role:</label>
+        <select  class="form-control" #role>
+            <option selected="selected">customer</option>
+            <option>store-manager</option>
+        </select>
+        <label>Active:</label>
+        <select  class="form-control" #active>
+            <option selected="selected">true</option>
+            <option>false</option>
+        </select>
+        <button (click)='editUser(role[role.selectedIndex].value, active[active.selectedIndex].value)'class="btn btn-success">
+            Confirm <i class="fas fa-check"></i>
+        </button>
+    </div>
+  </div>
+</div>

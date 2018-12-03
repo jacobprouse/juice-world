@@ -10,6 +10,15 @@ export class JuiceService {
   uri;
   
   getTopTen(callback){ 
+    let httpHeaders = new HttpHeaders({
+      'Content-Type' : 'application/json; charset=utf-8',
+      'Authorization' : 'Bearer '+localStorage.getItem('token')
+    });
+    
+    let options = {
+      'headers': httpHeaders
+    };
+    
     this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/juice/top_juices';
     return this.http.get(this.uri).subscribe(res => {
       callback(res);
@@ -17,6 +26,14 @@ export class JuiceService {
   }
   
   getJuices(callback){
+    let httpHeaders = new HttpHeaders({
+      'Content-Type' : 'application/json; charset=utf-8',
+      'Authorization' : 'Bearer '+localStorage.getItem('token')
+    });
+    
+    let options = {
+      'headers': httpHeaders
+    };
     this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/juice';
     return this.http.get(this.uri).subscribe(res => {
       callback(res);

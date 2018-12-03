@@ -11,8 +11,9 @@
   <button type="button" class="btn btn-primary"><a [routerLink]="['/home']" routerLinkActive="active"  style="color:black" class="alert-link">Home</a></button>
   <button type="button" class="btn btn-success" *ngIf="!hide"><a [routerLink]="['/shop']" routerLinkActive="active" style="color:black" class="alert-link">Shopping</a></button>
   <button type="button" class="btn btn-warning" *ngIf="!hide"><a [routerLink]="['/collections']" routerLinkActive="active" style="color:black" class="alert-link">Collections</a></button>
-  <button type="button" class="btn btn-info" *ngIf="!hide"><a routerLink="/admin" style="color:black" class="alert-link">Settings</a></button>
+  <button type="button" class="btn btn-info" *ngIf="!admin"><a [routerLink]="['/settings']" routerLinkActive="active" style="color:black" class="alert-link">Settings</a></button>
   <button type="button" class="btn btn-danger" (click)="log()"><a style="color:black" class="alert-link">{{logged}}</a></button>
+  <label style='color:red;'*ngIf="!admin">SHOP MANAGER LOGGED IN</label>
 </nav>
 
 <router-outlet></router-outlet>
