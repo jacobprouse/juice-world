@@ -44,7 +44,7 @@ export class JuiceComponent implements OnInit {
     });
     //when components are loaded, set up products
     this.juiceService.getTopTen(this.showTopTen.bind(this));
-    this.juiceService.getJuices(this.populateSelect.bind(this));
+    this.juiceService.getNonEmptyJuices(this.populateSelect.bind(this));
   }
   
   //radio buttons updating
@@ -82,7 +82,7 @@ export class JuiceComponent implements OnInit {
   //make a new comment, make sure they input everything
   newComment(text){
     if(typeof this.currentID=='undefined'||typeof this.userRating=='undefined'){
-      alert('Pick a product');
+      alert('Pick a product and select a rating');
     }
     else{
       this.commentsService.makeComment(this.currentID,this.selectedProduct, text, this.userRating)
@@ -98,6 +98,7 @@ export class JuiceComponent implements OnInit {
   populateComments(res:Object){
     var i= 0;
     while(typeof res[i]!='undefined'){
+      if(i==5){break;}
       this.comments.push(res[i]);
       i++;
     }

@@ -49,8 +49,11 @@
               <button (click)="increaseCart(item._id, item.cart+1)"class="btn btn-success">
                   <i class="fas fa-plus"></i>
               </button>
-              <button (click)="decreaseCart(item._id, item.cart)"class="btn btn-danger">
+              <button (click)="decreaseCart(item._id, item.cart)"class="btn btn-warning">
                   <i class="fas fa-minus"></i>
+              </button>
+              <button (click)='deleteItem(item._id)'class="btn btn-danger">
+                  <i class="fas fa-trash"></i>
               </button>
             </tr>   
           </tbody>

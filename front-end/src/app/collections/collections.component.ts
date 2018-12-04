@@ -35,10 +35,10 @@ export class CollectionsComponent implements OnInit {
   }
   //set the current selected collection and get items within
   setCurrentCollection(id){
-    this.clearJuiceTable();
+    this.resetTables();
     this.currentCollection = id;
     this.collectionsService.getSingleCollection(id,this.addToTable.bind(this))
-    this.resetTables();
+
   }
   //same as above, just with public collections
   setCurrentGlobalCollection(id){
@@ -138,7 +138,9 @@ export class CollectionsComponent implements OnInit {
   }
   //delete a collection
   deleteCollection(_id){
-    this.collectionsService.deleteSingleCollection(_id, this.resetTables.bind(this));
+    if(window.confirm("Are you sure you want to delete this collection?")){
+          this.collectionsService.deleteSingleCollection(_id, this.resetTables.bind(this));
+    }
   }
   //delete an item from the collection
     deleteCollectionItem(juice_id){

@@ -47,7 +47,10 @@ export class ShopComponent implements OnInit {
     let alreadyIn=false;
     this.products.forEach(element => {
       if(element['_id'] == juice_id){
-        if(this.cart!=null){
+        if(element['quantity']==0){
+          alert("We are out of stock")
+        }
+        else if(this.cart!=null){
           this.cart.forEach(element => {
             if(element['_id'] == juice_id){
               alert('That is already in your cart')
@@ -151,6 +154,20 @@ export class ShopComponent implements OnInit {
   }
   clearTable(){
     this.products = []
+  }
+  
+  deleteItem(id){
+    var cart = JSON.parse(localStorage.getItem('cart'));
+    var i = 0;
+    while(typeof cart[i]!='undefined'){
+      if(cart[i]['_id'] == id){
+        cart.splice(i, 1);
+      }
+      i++;
+    }
+    this.cart = cart;
+    localStorage.setItem('cart', JSON.stringify(this.cart));
+    this.calculateTotal();
   }
   buy(){
     if(this.cart == null){

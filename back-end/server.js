@@ -270,7 +270,6 @@ router.route('/createAccount')
         var email = req.body.email;
         var password = req.body.password;
         var button = req.body.buttonType;
-        console.log(button)
         
         if(!validator.isEmail(email)){
             res.send("Input valid email");
@@ -293,21 +292,23 @@ router.route('/createAccount')
                     if (existingPersistentUser) {
                         res.send('You have already signed up and confirmed your account. Did you forget your password?');
                     }
-                
-                    // new user created
-                    if (newTempUser) {
-                        var URL = newTempUser[nev.options.URLFieldName];
-                        
-                        nev.sendVerificationEmail(email, URL, function(err, info) {
-                            if (err) {
-                                return res.status(404).send('ERROR: sending verification email FAILED');
-                            }
-                            res.send('An email has been sent to you. Please check it to verify your account.')
-                        });
-        
-                        // user already exists in temporary collection!
-                    } else {
-                        res.send('You have already signed up. Please check your email to verify your account.');
+                    
+                    else{
+                        // new user created
+                        if (newTempUser) {
+                            var URL = newTempUser[nev.options.URLFieldName];
+                            
+                            nev.sendVerificationEmail(email, URL, function(err, info) {
+                                if (err) {
+                                    return res.status(404).send('ERROR: sending verification email FAILED');
+                                }
+                                res.send('An email has been sent to you. Please check it to verify your account.')
+                            });
+            
+                            // user already exists in temporary collection!
+                        } else {
+                            res.send('You have already signed up. Please check your email to verify your account.');
+                        }
                     }
                 });
             }else{
@@ -335,7 +336,7 @@ router.route('/authenticate')
         let email = req.body.email;
         let pass = req.body.password;
         if(!validator.isEmail(email)){
-            res.send("Input email");
+            res.send("Input valid email");
         }
         else if(typeof req.body.password == 'undefined' || req.body.password==''){
             res.send("Input password")
@@ -351,13 +352,13 @@ router.route('/authenticate')
         //execute query
         User.find(query, function(err, user){
             if(err){res.send("Wrong email or password");}
-            if(typeof user[0] == 'undefined'){
-                "Wrong email or password"
+            if(typeof user[0] == 'undefined' || user[0]==null){
+                res.send("Wrong email or password")
             }
-            if(user[0].active == false){
-                res.send('User is not active, see Store Manager')
+            if(user[0].active == false || typeof user[0].active == 'undefined'){
+                res.send('User is not active, see Store Manager at 1111 Juice Street, 5191234345')
             }
-            if(user[0].verified == false){
+            if(user[0].verified == false || typeof user[0].verified == 'undefined'){
                 res.send("You aren't verified, check your email")
             }
             //compare passwords with hash
@@ -396,11 +397,11 @@ router.route('/comments/:juice_id')
             if(err){
                 res.sendStatus(403);
             }else{
-                let comment = new Comments()
                 if(typeof req.body._id == 'undefined' || typeof req.body.text == 'undefined' ||
                 typeof req.body.email == 'undefined' || typeof req.body.rating == 'undefined'){
                     res.send('Fill out the fields')
                 }
+                let comment = new Comments()
                 comment.juiceName = req.body.juiceName;
                 comment.juiceID =  req.body._id;
                 comment.text = req.body.text;
@@ -411,6 +412,7 @@ router.route('/comments/:juice_id')
                     if (err){
                         res.send(err);
                     }
+                    res.send(comment);
                 });
             }
         });
@@ -550,6 +552,20 @@ router.route('/juice')
             res.json(juice);
         });
     });
+    
+// on routes that end in /juice
+// ----------------------------------------------------
+router.route('/juice/notempty')
+    // get all the juices with non zero stock lvls (https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/juice)
+    .get(function(req, res) {
+        Juice.find({quantity:{$gt:0}},function(err, juice) {
+            if (err){
+                res.send(err);}
+
+            res.json(juice);
+        });
+    });
+
     
 // on routyes that end in /juice/buy
 // ----------------------------------------------------
@@ -773,33 +789,21 @@ router.route('/collections/all')
 router.route('/collections/:_id')
 
     // get the collection by id
-    .get(verifyToken, function(req, res) {
-        jwt.verify(req.token, 'secret', (err, authData) =>{
-            if(err){
-                res.sendStatus(403);
-            }else{
-                Collections.findById(req.params._id, function(err, col) {
-                    if (err){
-                        res.send(err);}
-                    res.json(col);
-                });
-            }
+    .get(function(req, res) {
+        Collections.findById(req.params._id, function(err, col) {
+            if (err){
+                res.send(err);}
+            res.json(col);
         });
     })
     
     //delete the collection by id
-    .delete(verifyToken, function(req, res) {
-        jwt.verify(req.token, 'secret', (err, authData) =>{
-            if(err){
-                res.sendStatus(403);
-            }else{
-                Collections.deleteOne({_id: req.params._id}, function(err, juice) {
-                    if (err){
-                        res.send(err);
-                    }
-                    res.json({ message: 'Successfully deleted' });
-                });
+    .delete(function(req, res) {
+        Collections.deleteOne({_id: req.params._id}, function(err, juice) {
+            if (err){
+                res.send(err);
             }
+            res.json({ message: 'Successfully deleted' });
         });
     });
 
@@ -807,29 +811,23 @@ router.route('/collections/:_id')
 // ----------------------------------------------------
 router.route('/collections/juice')
     //remove juice of a collection
-    .put(verifyToken,function(req, res) {
-        jwt.verify(req.token, 'secret', (err, authData) =>{
-            if(err){
-                res.sendStatus(403);
-            }else{
-                Collections.findById(req.body.coll_id, function(err, coll) {
-                    if (err){
-                        res.send(err);
-                    }
-                    for(let i =0; i<coll.juices.length;i++){
-                        if(coll.juices[i].juiceID == req.body.juice_id){
-                            coll.juices.splice(i, 1);
-                            break;
-                        }
-                    }
-                    coll.save(function(err) {
-                        if (err){
-                            res.send(err);
-                        }
-                        res.json(coll);
-                    });
-                });
+    .put(function(req, res) {
+        Collections.findById(req.body.coll_id, function(err, coll) {
+            if (err){
+                res.send(err);
             }
+            for(let i =0; i<coll.juices.length;i++){
+                if(coll.juices[i].juiceID == req.body.juice_id){
+                    coll.juices.splice(i, 1);
+                    break;
+                }
+            }
+            coll.save(function(err) {
+                if (err){
+                    res.send(err);
+                }
+                res.json(coll);
+            });
         });
     });
 

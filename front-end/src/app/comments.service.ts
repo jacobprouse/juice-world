@@ -41,6 +41,7 @@ export class CommentsService {
     };
     this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/comments/'+juiceID;
     this.http.post(this.uri, JSON.stringify(juice), options).subscribe(res => {
+      callback();
     });
   }
   //get all user comments
