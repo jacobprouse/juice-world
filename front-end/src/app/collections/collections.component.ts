@@ -9,6 +9,7 @@ import decode from 'jwt-decode';
   styleUrls: ['./collections.component.css']
 })
 export class CollectionsComponent implements OnInit {
+  //declare arrays and variables
   collections:String[]=[];
   collection:String[]=[];
   products:String[]=[];
@@ -18,9 +19,11 @@ export class CollectionsComponent implements OnInit {
   currentGlobalCollection:String='';
   currentUser=''
 
+  //instansiate services
   constructor(private juiceService:JuiceService,
               private collectionsService:CollectionsService) { }
 
+  //populate tables on init and get token
   ngOnInit() {
     let token = localStorage.getItem('token')
     let email = decode(token).email;
@@ -30,29 +33,32 @@ export class CollectionsComponent implements OnInit {
     this.collectionsService.getAllCollections(this.populateGlobalCollections.bind(this))
     this.collectionsService.getUserCollection(this.populateUserCollections.bind(this))
   }
-  
+  //set the current selected collection and get items within
   setCurrentCollection(id){
     this.clearJuiceTable();
     this.currentCollection = id;
     this.collectionsService.getSingleCollection(id,this.addToTable.bind(this))
     this.resetTables();
   }
+  //same as above, just with public collections
   setCurrentGlobalCollection(id){
     this.clearJuiceTable();
     this.currentGlobalCollection = id;
     this.collectionsService.getSingleCollection(id,this.addToGlobalTable.bind(this))
     this.resetTables();
   }
+  //clear the tables
   resetTables(){
     this.clearJuiceTable()
     this.collectionsService.getAllCollections(this.populateGlobalCollections.bind(this))
     this.collectionsService.getUserCollection(this.populateUserCollections.bind(this))
   }
+  //clear the individual collection arrays
   clearJuiceTable(){
     this.collection=[]
     this.globalJuices=[]
   }
-
+  //add the items to the collection table
   addToTable(res){
     var j =0;
     while(typeof res.juices[j]!='undefined'){
@@ -60,6 +66,7 @@ export class CollectionsComponent implements OnInit {
       j++;
     }
   }
+  //add the items to the global table
   addToGlobalTable(res){
     var j =0;
     while(typeof res.juices[j]!='undefined'){
@@ -76,15 +83,15 @@ export class CollectionsComponent implements OnInit {
       i++;
     }
   }
-  
+  //clear the product table
   clearProductTable(){
     this.products = [];
   }
-  
+  //add new collection
   addCollection(name, des, vis){
     this.collectionsService.addNewCollection(name, des, vis, this.resetTables.bind(this));
   }
-  
+  //populate the users collection table
   populateUserCollections(res: Object){
     this.collections=[]
     var i= 0;
@@ -93,7 +100,7 @@ export class CollectionsComponent implements OnInit {
       i++;
     }
   }
-  
+  //populate the gloabl collection table
   populateGlobalCollections(res: Object){
     this.globalCollection=[]
     var i= 0;
@@ -102,7 +109,7 @@ export class CollectionsComponent implements OnInit {
       i++;
     }
   }
-  
+  //add item to collection
   addToCollection(id, wanted, name, method){
     let res = false;
     this.collection.forEach(element =>{
@@ -120,7 +127,7 @@ export class CollectionsComponent implements OnInit {
       this.collectionsService.addToCollections(id, wanted, name, method, this.currentCollection, this.resetTables.bind(this));
     }
   }
-  
+  //increase quantity of wanted items in collection
   increaseCollection(id, wanted, name, method){
     if(wanted <= 0){
       alert("You cannot wish for negative values")
@@ -129,14 +136,15 @@ export class CollectionsComponent implements OnInit {
       this.collectionsService.addToCollections(id, wanted, name, method, this.currentCollection);
     }
   }
-  
+  //delete a collection
   deleteCollection(_id){
     this.collectionsService.deleteSingleCollection(_id, this.resetTables.bind(this));
   }
+  //delete an item from the collection
     deleteCollectionItem(juice_id){
     this.collectionsService.deleteSingleCollectionItem(this.currentCollection,juice_id, this.resetTables.bind(this));
   }
-  
+  //edit the collection item
   editCollection(name, des, vis){
     this.collectionsService.editCollectionItem(name, des, vis, this.currentCollection, this.resetTables.bind(this));
   }

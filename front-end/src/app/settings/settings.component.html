@@ -108,6 +108,7 @@
 </div>
 <div class='row' style='padding-left:20px;'>
   <div class='column'>
+    <h3>Users</h3>
     <table class="table">
       <thead>
         <tr>
@@ -144,4 +145,13 @@
         </button>
     </div>
   </div>
+  <div class='column' style='padding-left:50px;'>
+    <h3>Security and Privacy Policy</h3>
+    <textarea class="form-control" #policy aria-label="With textarea">
+    </textarea> 
+    <button (click)= 'setPolicy(policy.value)' class="btn btn-success">
+      Confirm
+    </button>
+  </div>
 </div>
+

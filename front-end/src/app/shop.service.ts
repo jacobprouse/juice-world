@@ -9,6 +9,7 @@ export class ShopService {
   //update quantities of juices
   constructor(private http:HttpClient) { }
   
+  //buy a juice
   buyJuice(juice){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',

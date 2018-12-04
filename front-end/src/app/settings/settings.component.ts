@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { JuiceService } from '../juice.service';
 import { SettingsService } from '../settings.service';
-
+import { PrivacyService } from '../privacy.service';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
@@ -14,32 +14,40 @@ export class SettingsComponent implements OnInit {
   currentProduct='';
   currentComment = '';
   currentEmail='';
-  constructor(private juiceService:JuiceService, private settingsService:SettingsService) { }
-
+  policy=''
+  dcma=''
+  //get services
+  constructor(private juiceService:JuiceService, 
+              private settingsService:SettingsService,
+              private privacyService:PrivacyService) { }
+  //clear and populate tables on init
   ngOnInit() {
     this.clearTable();
     this.juiceService.getJuices(this.populateTable.bind(this));
     this.settingsService.getComments(this.populateComments.bind(this));
     this.settingsService.getUsers(this.populateUsers.bind(this));
   }
-  
+  //set the policy variable
+  setPolicy(text){
+    this.privacyService.setPolicy(this.policy, text);
+  }
+  //set current comment selected
   setCurrentComment(id){
     this.currentComment = id;
   }
-  
+  //set current product selected
   setCurrentProduct(id){
     this.currentProduct = id;
   }
-  
+  //set current user selected
   setCurrentUser(email){
     this.currentEmail = email;
   }
-  
+  //edit user
   editUser(role, active){
     this.settingsService.editUserDetails(this.currentEmail, active, role, this.refresh.bind(this));
   }
-  
-    //populate the table with juices
+  //populate the table with juices
   populateUsers(res:Object){
     this.users=[]
     var i= 0;
@@ -58,16 +66,16 @@ export class SettingsComponent implements OnInit {
       i++;
     }
   }
-  
+  //clear the tables
   clearTable(){
     this.products = []
     this.comments = []
   }
-  
+  //delete a juice
   deleteItem(_id){
     this.settingsService.deleteJuice(_id, this.refresh.bind(this))
   }
-  
+  //populate the comments section
   populateComments(res:Object){
     this.comments = []
     var i= 0;
@@ -81,7 +89,7 @@ export class SettingsComponent implements OnInit {
       i++;
     }
   }
-  
+  //edit specifics of a juice
   editJuice(name, des, p, t, q){
     if(name == ''){
       alert('Please input a name')
@@ -111,7 +119,7 @@ export class SettingsComponent implements OnInit {
       this.settingsService.putJuice(obj, this.refresh.bind(this))
     }
   }
-  
+  //add a new juice
   addJuice(name, des, p, t, q){
     if(name == ''){
       alert('Please input a name')
@@ -140,13 +148,14 @@ export class SettingsComponent implements OnInit {
       this.settingsService.postJuice(obj, this.refresh.bind(this))
     }
   }
+  //refresh the tables of the page
   refresh(){
     this.juiceService.getJuices(this.populateTable.bind(this));
     this.settingsService.getComments(this.populateComments.bind(this));
     this.settingsService.getUsers(this.populateUsers.bind(this));
 
   }
-  
+  //edit a comments visibility
   editComment(vis){
     let obj = {
       '_id':this.currentComment,

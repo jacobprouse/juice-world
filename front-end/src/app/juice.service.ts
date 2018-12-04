@@ -9,6 +9,7 @@ export class JuiceService {
   constructor( private http:HttpClient) { }
   uri;
   
+  //get the top ten juices
   getTopTen(callback){ 
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
@@ -24,7 +25,7 @@ export class JuiceService {
       callback(res);
     });
   }
-  
+  //get all the juices
   getJuices(callback){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',

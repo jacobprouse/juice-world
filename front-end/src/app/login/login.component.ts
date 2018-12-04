@@ -13,7 +13,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
   }
-  
+  //on click send login 
   onClick(email, password){
     if(email==null||password==null){
       alert("Input an email");

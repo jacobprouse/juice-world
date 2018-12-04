@@ -10,6 +10,7 @@ export class CollectionsService {
 
   constructor(private http:HttpClient) { }
   
+  //get a single collection
   getSingleCollection(coll_id, callback){
     let collection = {
       '_id':coll_id
@@ -19,7 +20,7 @@ export class CollectionsService {
           callback(res);
     });
   }
-  
+  //add a new juice to collection
   addToCollections(id, wanted,name, method, collection){
     let token = localStorage.getItem('token')
     let email = decode(token).email;
@@ -44,6 +45,7 @@ export class CollectionsService {
     });
   }
   
+  // add a new collection
   addNewCollection(name, des, vis, callback){
     let token = localStorage.getItem('token')
     let email = decode(token).email;
@@ -66,6 +68,7 @@ export class CollectionsService {
       callback(res);
     });
   }
+  //get collections of a user
   getUserCollection(callback){
     let token = localStorage.getItem('token')
     let email = decode(token).email;
@@ -77,7 +80,7 @@ export class CollectionsService {
       callback(res)
     });
   }
-  
+  //get the global collections
   getAllCollections(callback){
     let token = localStorage.getItem('token')
     this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/collections/all';
@@ -85,6 +88,7 @@ export class CollectionsService {
       callback(res)
     });
   }
+  //delete a single collection
   deleteSingleCollection(_id, callback){
     let token = localStorage.getItem('token')
     let email = decode(token).email;
@@ -104,6 +108,7 @@ export class CollectionsService {
       callback()
     });
   }
+  //delete an item from a collection
   deleteSingleCollectionItem(coll_id, juice_id, callback){
     let token = localStorage.getItem('token')
     let email = decode(token).email;
@@ -124,6 +129,7 @@ export class CollectionsService {
       callback()
     });
   }
+  //edit the collection item
   editCollectionItem(name, des, vis, _id, callback){
     let token = localStorage.getItem('token')
     let email = decode(token).email;

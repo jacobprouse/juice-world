@@ -11,6 +11,7 @@ export class CommentsService {
 
   constructor(private http:HttpClient) { }
   
+  //get all the comments
   getComments(juiceID, callback){
     this.uri = 'https://se3316-jprouse2-lab5-jprouse2.c9users.io:8081/api/comments/'+juiceID;
 
@@ -19,7 +20,7 @@ export class CommentsService {
       callback(res);
     });
   }
-  
+  //make a new comment
   makeComment(juiceID,juiceName, text, rating){
     let token = localStorage.getItem('token')
     let email = decode(token).email
@@ -42,7 +43,7 @@ export class CommentsService {
     this.http.post(this.uri, JSON.stringify(juice), options).subscribe(res => {
     });
   }
-  
+  //get all user comments
   getUserComments(email){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',

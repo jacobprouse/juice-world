@@ -18,6 +18,7 @@ import { FormsModule } from '@angular/forms';
 import { ShopComponent } from './shop/shop.component';
 import { CollectionsComponent } from './collections/collections.component';
 import { SettingsComponent } from './settings/settings.component';
+import { PrivacyComponent } from './privacy/privacy.component';
 
 const JWT_Module_Options: JwtModuleOptions = {
     config: {
@@ -36,7 +37,8 @@ const JWT_Module_Options: JwtModuleOptions = {
     RegisterComponent,
     ShopComponent,
     CollectionsComponent,
-    SettingsComponent
+    SettingsComponent,
+    PrivacyComponent
   ],
   imports: [
     BrowserAnimationsModule,

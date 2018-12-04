@@ -79,6 +79,7 @@ export class JuiceComponent implements OnInit {
     }
   }
   
+  //make a new comment, make sure they input everything
   newComment(text){
     if(typeof this.currentID=='undefined'||typeof this.userRating=='undefined'){
       alert('Pick a product');
@@ -87,13 +88,16 @@ export class JuiceComponent implements OnInit {
       this.commentsService.makeComment(this.currentID,this.selectedProduct, text, this.userRating)
     }
   }
+  
+  //clear the comments array
   clearComments(){
     this.comments=[]
   }
   
+  //populate the comments box
   populateComments(res:Object){
     var i= 0;
-    while(typeof res[i]!='undefined' || i==4){
+    while(typeof res[i]!='undefined'){
       this.comments.push(res[i]);
       i++;
     }

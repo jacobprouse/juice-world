@@ -12,7 +12,7 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit() {
   }
-
+  //register a user
   onClick(buttonName, email, password){
     let newUser = {
       'email':email,

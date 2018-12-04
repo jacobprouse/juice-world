@@ -28,7 +28,7 @@ export class AppComponent implements OnInit{
       this.logged='Login';
       this.hide = true;
       this.admin=true;
-      this.log();
+      //this.log();
     }
     if(this.roleGuard.isAdmin()){
       this.admin = false;

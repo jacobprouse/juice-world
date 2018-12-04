@@ -8,6 +8,7 @@ export class SettingsService {
   uri='';
   constructor(private http:HttpClient) { }
   
+  //edit a comment
   editAComment(obj, callback){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
@@ -30,6 +31,7 @@ export class SettingsService {
         });
   }
   
+  //edit a user's details
   editUserDetails(email,active, role, callback){
     let obj = {
       'email':email,
@@ -57,6 +59,7 @@ export class SettingsService {
         });
   }
   
+  //get all users
   getUsers(callback){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
@@ -74,6 +77,7 @@ export class SettingsService {
     });
   }
   
+  //get all comments
   getComments(callback){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
@@ -91,6 +95,7 @@ export class SettingsService {
     });
   }
   
+  //update juice
   putJuice(obj, callback){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
@@ -113,6 +118,7 @@ export class SettingsService {
         });
   }
   
+  //delete juice
   deleteJuice(_id, callback){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
@@ -134,6 +140,7 @@ export class SettingsService {
         });
   }
   
+  //make a new juice
   postJuice(obj, callback){
     let httpHeaders = new HttpHeaders({
       'Content-Type' : 'application/json; charset=utf-8',
