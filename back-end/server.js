@@ -51,6 +51,7 @@ var Juice = require('./app/models/juice');
 var User = require('./app/models/user');
 var Comments = require('./app/models/comments');
 var Collections = require('./app/models/collections');
+var Policy = require('./app/models/policy');
 
 var nev = require('email-verification')(mongoose);
 
@@ -151,6 +152,43 @@ router.route('/email-verification/:URL')
         });
     });
     //end copied code
+    
+// on routes that end in /policy
+// ----------------------------------------------------
+router.route('/policy')
+
+    .get(function(req, res){
+        Policy.find().exec(function(err, pol){
+            if(err){
+                res.send(err);
+            }
+            res.send(pol);
+        });
+    })
+    
+    .put(function(req, res){
+        Policy.find().exec(function(err, pol){
+            pol[0].content = req.body.content;
+            pol[0].save(function(err) {
+                if (err){
+                    res.send(err);
+                }
+                res.json('saved');
+            });
+        });
+    })
+    
+    .post(function(req, res){
+        let pol = new Policy();
+        pol.content = req.body.content;
+        console.log('posting')
+        console.log(pol)
+        pol.save(function(err) {
+                if (err){
+                    res.send(err);
+                }
+        });
+    });
 
 // on routes that end in /user
 // ----------------------------------------------------
@@ -378,19 +416,19 @@ router.route('/comments/:user_id')
         });
     })
     
-//easy grab all comments (for dev testing)
-// ----------------------------------------------------
-router.route('/comments/visible')
-    //get all comments
-    .get(function(req, res){
-        Comments.find(function(err, comments) {
-            if (err){
-                res.send(err);}
-            res.send(comments);
-        });
-    })
+// //easy grab all comments (for dev testing)
+// // ----------------------------------------------------
+// router.route('/comments/visible')
+//     //get all comments that are visible
+//     .get(function(req, res){
+//         Comments.find(function(err, comments) {
+//             if (err){
+//                 res.send(err);}
+//             res.send(comments);
+//         });
+//     })
 
-//easy grab all comments (for dev testing)
+//easy grab all comments for shop-manager
 // ----------------------------------------------------
 router.route('/comments')
     
@@ -468,7 +506,6 @@ router.route('/juice')
     })
     
     .delete(verifyToken, function(req, res){
-        console.log('amost in')
         jwt.verify(req.token, 'secret', (err, authData) =>{
             if(err){
                 res.sendStatus(403);
@@ -502,7 +539,7 @@ router.route('/juice')
         });
     });
     
-// on routes that end in /juice/buy
+// on routyes that end in /juice/buy
 // ----------------------------------------------------
 router.route('/juice/buy')    
 
