@@ -166,27 +166,45 @@ router.route('/policy')
         });
     })
     
-    .put(function(req, res){
-        Policy.find().exec(function(err, pol){
-            pol[0].content = req.body.content;
-            pol[0].save(function(err) {
-                if (err){
-                    res.send(err);
+    .put(verifyToken, function(req, res){
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token);
+                if(payload.role=='store-manager'){
+                    Policy.find().exec(function(err, pol){
+                        pol[0].content = req.body.content;
+                        pol[0].save(function(err) {
+                            if (err){
+                                res.send(err);
+                            }
+                            res.json('saved');
+                        });
+                    });
                 }
-                res.json('saved');
-            });
+            }
         });
     })
     
-    .post(function(req, res){
-        let pol = new Policy();
-        pol.content = req.body.content;
-        console.log('posting')
-        console.log(pol)
-        pol.save(function(err) {
-                if (err){
-                    res.send(err);
+    .post(verifyToken, function(req, res){
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token);
+                if(payload.role=='store-manager'){
+                    let pol = new Policy();
+                    pol.content = req.body.content;
+                    console.log('posting')
+                    console.log(pol)
+                    pol.save(function(err) {
+                            if (err){
+                                res.send(err);
+                            }
+                    });
                 }
+            }
         });
     });
 
@@ -373,21 +391,27 @@ router.route('/authenticate')
 router.route('/comments/:juice_id')
     
     //post a comment for a specific juice_id
-    .post(function(req, res){
-        let comment = new Comments()
-        if(typeof req.body._id == 'undefined' || typeof req.body.text == 'undefined' ||
-        typeof req.body.email == 'undefined' || typeof req.body.rating == 'undefined'){
-            res.send('Fill out the fields')
-        }
-        comment.juiceName = req.body.juiceName;
-        comment.juiceID =  req.body._id;
-        comment.text = req.body.text;
-        comment.email = req.body.email;
-        comment.rating = req.body.rating;
-        // save the bear and check for errors
-        comment.save(function(err) {
-            if (err){
-                res.send(err);
+    .post(verifyToken, function(req, res){
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let comment = new Comments()
+                if(typeof req.body._id == 'undefined' || typeof req.body.text == 'undefined' ||
+                typeof req.body.email == 'undefined' || typeof req.body.rating == 'undefined'){
+                    res.send('Fill out the fields')
+                }
+                comment.juiceName = req.body.juiceName;
+                comment.juiceID =  req.body._id;
+                comment.text = req.body.text;
+                comment.email = req.body.email;
+                comment.rating = req.body.rating;
+                // save the bear and check for errors
+                comment.save(function(err) {
+                    if (err){
+                        res.send(err);
+                    }
+                });
             }
         });
     })
@@ -416,18 +440,6 @@ router.route('/comments/:user_id')
         });
     })
     
-// //easy grab all comments (for dev testing)
-// // ----------------------------------------------------
-// router.route('/comments/visible')
-//     //get all comments that are visible
-//     .get(function(req, res){
-//         Comments.find(function(err, comments) {
-//             if (err){
-//                 res.send(err);}
-//             res.send(comments);
-//         });
-//     })
-
 //easy grab all comments for shop-manager
 // ----------------------------------------------------
 router.route('/comments')
@@ -543,21 +555,30 @@ router.route('/juice')
 // ----------------------------------------------------
 router.route('/juice/buy')    
 
-    .put(function(req, res) {
-        Juice.findById(req.body._id, function(err, juice){
-            if(err){ 
-                res.send(err);
-            }
-            console.log(req.body)
-            juice.quantity = req.body.newQuantity;
-            juice.sold = juice.sold + req.body.cart;
-            juice.save(function(err) {
-                if (err){
-                    res.send(err);
+    .put(verifyToken,function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token);
+                if(payload.role=='store-manager'){
+                    Juice.findById(req.body._id, function(err, juice){
+                        if(err){ 
+                            res.send(err);
+                        }
+                        console.log(req.body)
+                        juice.quantity = req.body.newQuantity;
+                        juice.sold = juice.sold + req.body.cart;
+                        juice.save(function(err) {
+                            if (err){
+                                res.send(err);
+                            }
+                            res.json({ message: ' updated!' });
+                        });
+                    });
                 }
-                res.json({ message: ' updated!' });
-            });
-        })
+            }
+        });
     });
 
 // on routes that end in /juice/top_juices
@@ -620,15 +641,23 @@ router.route('/juice/:juice_id')
     })
     
     // delete the juice with this id
-    .delete(function(req, res) {
-        console.log(req.params.juice_id)
-        Juice.remove({
-            _id: req.params.juice_id
-        }, function(err, juice) {
-            if (err){
-                res.send(err);}
-
-            res.json({ message: 'Successfully deleted' });
+    .delete(verifyToken, function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                let payload = jwt_decode(req.token);
+                if(payload.role=='store-manager'){
+                    Juice.remove({
+                        _id: req.params.juice_id
+                    }, function(err, juice) {
+                        if (err){
+                            res.send(err);}
+            
+                        res.json({ message: 'Successfully deleted' });
+                    });
+                }
+            }
         });
     });
 
@@ -675,49 +704,55 @@ router.route('/collections')
     })
     
     // update the collection of this user
-    .put(function(req, res) {
-        Collections.findById(req.body.coll_id,function(err, col){
-            if(err){ 
-                res.send(err);
-            }
-            //add juice to coll
-            if(req.body.method=='add'){
-                console.log('hi')
-                col.juices.push({
-                    juiceID:req.body.prod_id,
-                    juiceName:req.body.juiceName,
-                    quantity:1
+    .put(verifyToken, function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                Collections.findById(req.body.coll_id,function(err, col){
+                    if(err){ 
+                        res.send(err);
+                    }
+                    //add juice to coll
+                    if(req.body.method=='add'){
+                        console.log('hi')
+                        col.juices.push({
+                            juiceID:req.body.prod_id,
+                            juiceName:req.body.juiceName,
+                            quantity:1
+                        });
+                        console.log(col.juices)
+                    }
+                    //increase quant of juice
+                    else if(req.body.method == 'add-minus'){
+                        console.log('asdasd')
+                        col.juices.forEach(element =>{
+                           if(element._id == req.body.prod_id){
+                               element.quantity = req.body.wanted
+                           }
+                        });
+                    }
+                    //else is update collection
+                    else{
+                        if(req.body.name!=''){
+                            col.name = req.body.name;
+                        }
+                        if(req.body.description!=''){
+                            col.description = req.body.description;
+        
+                        }
+                        col.visibility = req.body.visibility;
+                    }
+                    col.save(function(err) {
+                        if (err){
+                            res.send(err);
+                        }
+                        res.json(col);
+                    });
                 });
-                console.log(col.juices)
             }
-            //increase quant of juice
-            else if(req.body.method == 'add-minus'){
-                console.log('asdasd')
-                col.juices.forEach(element =>{
-                   if(element._id == req.body.prod_id){
-                       element.quantity = req.body.wanted
-                   }
-                });
-            }
-            //else is update collection
-            else{
-                if(req.body.name!=''){
-                    col.name = req.body.name;
-                }
-                if(req.body.description!=''){
-                    col.description = req.body.description;
-
-                }
-                col.visibility = req.body.visibility;
-            }
-            col.save(function(err) {
-                if (err){
-                    res.send(err);
-                }
-                res.json(col)
-            });
-        })
-    })
+        });
+    });
     
 // on routes that end in /collections
 // ----------------------------------------------------
@@ -738,48 +773,63 @@ router.route('/collections/all')
 router.route('/collections/:_id')
 
     // get the collection by id
-    .get(function(req, res) {
-        Collections.findById(req.params._id, function(err, col) {
-            if (err){
-                res.send(err);}
-            res.json(col);
+    .get(verifyToken, function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                Collections.findById(req.params._id, function(err, col) {
+                    if (err){
+                        res.send(err);}
+                    res.json(col);
+                });
+            }
         });
     })
     
     //delete the collection by id
-    .delete(function(req, res) {
-        Collections.deleteOne({_id: req.params._id}, function(err, juice) {
-            if (err){
-                res.send(err);
+    .delete(verifyToken, function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                Collections.deleteOne({_id: req.params._id}, function(err, juice) {
+                    if (err){
+                        res.send(err);
+                    }
+                    res.json({ message: 'Successfully deleted' });
+                });
             }
-            res.json({ message: 'Successfully deleted' });
         });
     });
 
 // on routes that end in /collections/juice/:_id
 // ----------------------------------------------------
 router.route('/collections/juice')
-    //delete the collection by id
-    .put(function(req, res) {
-        console.log(req.body)
-        Collections.findById(req.body.coll_id, function(err, coll) {
-            if (err){
-                res.send(err);}
-            
-            console.log(coll.juices)
-            for(let i =0; i<coll.juices.length;i++){
-                if(coll.juices[i].juiceID == req.body.juice_id){
-                    coll.juices.splice(i, 1);
-                    break;
-                }
+    //remove juice of a collection
+    .put(verifyToken,function(req, res) {
+        jwt.verify(req.token, 'secret', (err, authData) =>{
+            if(err){
+                res.sendStatus(403);
+            }else{
+                Collections.findById(req.body.coll_id, function(err, coll) {
+                    if (err){
+                        res.send(err);
+                    }
+                    for(let i =0; i<coll.juices.length;i++){
+                        if(coll.juices[i].juiceID == req.body.juice_id){
+                            coll.juices.splice(i, 1);
+                            break;
+                        }
+                    }
+                    coll.save(function(err) {
+                        if (err){
+                            res.send(err);
+                        }
+                        res.json(coll);
+                    });
+                });
             }
-            console.log(coll.juices)
-            coll.save(function(err) {
-                if (err){
-                    res.send(err);
-                }
-                res.json(coll)
-            });
         });
     });
 
