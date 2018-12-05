@@ -23,7 +23,7 @@ export class RegisterService {
       .subscribe(
         res => {
           console.log(res);
-        }
+        },
         err => {
           alert(err.error.text);
         }

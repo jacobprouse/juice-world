@@ -37,7 +37,7 @@ export class LoginService {
 		  			alert('Congrats!');
 					}
 		  		
-				}
+				},
 				err => {
 					alert(err.error.text);
 				}

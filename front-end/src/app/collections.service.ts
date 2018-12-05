@@ -50,7 +50,7 @@ export class CollectionsService {
     let token = localStorage.getItem('token')
     let email = decode(token).email;
     let httpHeaders = new HttpHeaders({
-      'Content-Type' : 'application/json; charset=utf-8'
+      'Content-Type' : 'application/json; charset=utf-8',
       'Authorization' : 'Bearer '+token
     });
     
@@ -142,7 +142,7 @@ export class CollectionsService {
       'headers': httpHeaders
     };
     let collection = {
-      'coll_id': _id
+      'coll_id': _id,
       'name': name,
       'description':des,
       'visibility':vis,
